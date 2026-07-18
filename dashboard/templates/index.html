@@ -93,6 +93,18 @@
           <input type="number" id="pref_min_followers" class="input-field" placeholder="e.g. 1000" />
           <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts with fewer followers.</p>
         </div>
+
+        <div>
+          <label class="setting-label">Maximum Followers</label>
+          <input type="number" id="pref_max_followers" class="input-field" placeholder="e.g. 50000" />
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts with more followers (leave blank for no limit).</p>
+        </div>
+
+        <div>
+          <label class="setting-label">Target Locations</label>
+          <input type="text" id="pref_location_keywords" class="input-field" placeholder="e.g. London, UK, New York" />
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts that don't mention these in their bio or website (comma separated, leave blank for any).</p>
+        </div>
         
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <input type="checkbox" id="pref_require_website" style="width:16px;height:16px;" />
@@ -608,6 +620,8 @@
             if (res.ok) {
                 const prefs = await res.json();
                 document.getElementById('pref_min_followers').value = prefs.min_followers || '';
+                document.getElementById('pref_max_followers').value = prefs.max_followers || '';
+                document.getElementById('pref_location_keywords').value = prefs.location_keywords || '';
                 document.getElementById('pref_require_website').checked = prefs.require_website || false;
             }
         } catch (e) {}
@@ -619,12 +633,14 @@
 
     async function saveUserPreferences() {
         const min_followers = parseInt(document.getElementById('pref_min_followers').value) || 0;
+        const max_followers = parseInt(document.getElementById('pref_max_followers').value) || null;
+        const location_keywords = document.getElementById('pref_location_keywords').value || null;
         const require_website = document.getElementById('pref_require_website').checked;
         try {
             await fetch('/api/user/preferences', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-                body: JSON.stringify({ min_followers, require_website, deep_enrichment: false })
+                body: JSON.stringify({ min_followers, max_followers, location_keywords, require_website, deep_enrichment: false })
             });
             hidePreferences();
         } catch (e) {

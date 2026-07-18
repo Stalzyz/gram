@@ -140,5 +140,6 @@ class WebsiteScraper:
             "has_google_analytics": tech_detector.detect_google_analytics(combined_html),
             "live_chat_widget": tech_detector.detect_live_chat(combined_html),
             "has_whatsapp_widget": tech_detector.detect_whatsapp_widget(combined_html),
+            "raw_html": combined_html,
         })
         return result

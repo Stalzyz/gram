@@ -66,8 +66,12 @@ def api_stats(campaign: str = "default", user_id: int = Depends(get_current_user
         "failed_profiles": db_stats["failed_profiles"],
     })
 
+from typing import Optional
+
 class UserPreferences(BaseModel):
     min_followers: int = 0
+    max_followers: Optional[int] = None
+    location_keywords: Optional[str] = None
     require_website: bool = False
     deep_enrichment: bool = False
 

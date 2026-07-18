@@ -101,8 +101,24 @@ class LeadPipeline:
         if getattr(self, "prefs", {}).get("min_followers", 0) > followers:
             raise SkipFilterError("low_followers")
             
+        max_followers = getattr(self, "prefs", {}).get("max_followers")
+        if max_followers and followers > max_followers:
+            raise SkipFilterError("high_followers")
+            
         if getattr(self, "prefs", {}).get("require_website", False) and not website:
             raise SkipFilterError("no_website")
+
+        # Initial location check in bio
+        location_keywords = getattr(self, "prefs", {}).get("location_keywords", "")
+        loc_keys = [k.strip().lower() for k in location_keywords.split(",")] if location_keywords else []
+        bio = ig_data.get("biography", "").lower()
+        
+        location_matched = False
+        if loc_keys:
+            if any(k in bio for k in loc_keys if k):
+                location_matched = True
+        else:
+            location_matched = True # No filter applied
 
         row.update({
             "Profile Name": ig_data.get("name", ""),
@@ -119,6 +135,15 @@ class LeadPipeline:
         })
 
         site_result = self.website_scraper.scrape(website) if website else {}
+        
+        # Secondary location check in website
+        if not location_matched and website:
+            site_html = site_result.get("raw_html", "").lower()
+            if any(k in site_html for k in loc_keys if k):
+                location_matched = True
+                
+        if loc_keys and not location_matched:
+            raise SkipFilterError("location_mismatch")
         row.update({
             "Email": site_result.get("email", ""),
             "Phone Number": site_result.get("phone", ""),
@@ -134,6 +159,9 @@ class LeadPipeline:
             "Google Analytics Detected": "Yes" if site_result.get("has_google_analytics") else "No",
             "Live Chat Widget": site_result.get("live_chat_widget", ""),
         })
+
+        # Clean up raw HTML before saving to DB
+        site_result.pop("raw_html", None)
 
         screenshot_path = ""
         if website and self.capture_screenshots and site_result.get("website_reachable"):

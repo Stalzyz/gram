@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE TABLE IF NOT EXISTS user_preferences (
     user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     min_followers INTEGER NOT NULL DEFAULT 0,
+    max_followers INTEGER,
+    location_keywords TEXT,
     require_website BOOLEAN NOT NULL DEFAULT FALSE,
     deep_enrichment BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -74,6 +76,8 @@ class ResultStore:
                 cur.execute(SCHEMA)
                 # Ensure is_admin column exists if table was already created
                 cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE")
+                cur.execute("ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS max_followers INTEGER")
+                cur.execute("ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS location_keywords TEXT")
             conn.commit()
         finally:
             self.pool.putconn(conn)
@@ -153,11 +157,11 @@ class ResultStore:
         conn = self.pool.getconn()
         try:
             with conn.cursor() as cur:
-                cur.execute("SELECT min_followers, require_website, deep_enrichment FROM user_preferences WHERE user_id = %s", (user_id,))
+                cur.execute("SELECT min_followers, require_website, deep_enrichment, max_followers, location_keywords FROM user_preferences WHERE user_id = %s", (user_id,))
                 row = cur.fetchone()
                 if row:
-                    return {"min_followers": row[0], "require_website": row[1], "deep_enrichment": row[2]}
-                return {"min_followers": 0, "require_website": False, "deep_enrichment": False}
+                    return {"min_followers": row[0], "require_website": row[1], "deep_enrichment": row[2], "max_followers": row[3], "location_keywords": row[4]}
+                return {"min_followers": 0, "require_website": False, "deep_enrichment": False, "max_followers": None, "location_keywords": None}
         finally:
             self.pool.putconn(conn)
 
@@ -166,13 +170,15 @@ class ResultStore:
         try:
             with conn.cursor() as cur:
                 cur.execute(
-                    """INSERT INTO user_preferences (user_id, min_followers, require_website, deep_enrichment) 
-                       VALUES (%s, %s, %s, %s)
+                    """INSERT INTO user_preferences (user_id, min_followers, require_website, deep_enrichment, max_followers, location_keywords) 
+                       VALUES (%s, %s, %s, %s, %s, %s)
                        ON CONFLICT (user_id) DO UPDATE SET 
                        min_followers = EXCLUDED.min_followers,
                        require_website = EXCLUDED.require_website,
-                       deep_enrichment = EXCLUDED.deep_enrichment""",
-                    (user_id, prefs.get("min_followers", 0), prefs.get("require_website", False), prefs.get("deep_enrichment", False))
+                       deep_enrichment = EXCLUDED.deep_enrichment,
+                       max_followers = EXCLUDED.max_followers,
+                       location_keywords = EXCLUDED.location_keywords""",
+                    (user_id, prefs.get("min_followers", 0), prefs.get("require_website", False), prefs.get("deep_enrichment", False), prefs.get("max_followers"), prefs.get("location_keywords"))
                 )
             conn.commit()
         finally:
