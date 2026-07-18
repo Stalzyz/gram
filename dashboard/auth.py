@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import os
+import requests
+import secrets
 
 from exporter.db import store
 
@@ -13,6 +15,9 @@ router = APIRouter()
 class UserCreate(BaseModel):
     email: str
     password: str
+
+class GoogleAuth(BaseModel):
+    credential: str
 
 class Token(BaseModel):
     access_token: str
@@ -92,3 +97,33 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 def read_users_me(user_id: int = Depends(get_current_user_id)):
     user = store.get_user_by_id(user_id)
     return {"email": user["email"], "credits": user["credits"], "is_admin": user["is_admin"]}
+
+@router.post("/google", response_model=Token)
+def login_google(auth: GoogleAuth):
+    # Verify the token using Google's tokeninfo endpoint
+    try:
+        resp = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={auth.credential}", timeout=10)
+        resp.raise_for_status()
+        info = resp.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid Google token")
+
+    email = info.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google token did not contain an email")
+
+    user = store.get_user_by_email(email)
+    if not user:
+        # Register new user with a random unguessable password
+        hashed = get_password_hash(secrets.token_urlsafe(32))
+        user_id = store.create_user(email, hashed)
+        
+        # Read free credits from settings
+        free_credits = int(store.get_setting("free_credits", "10"))
+        if free_credits > 0:
+            store.add_credits(user_id, free_credits)
+    else:
+        user_id = user["id"]
+
+    token = create_access_token(data={"sub": str(user_id)})
+    return {"access_token": token, "token_type": "bearer"}

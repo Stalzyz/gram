@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css" />
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="app-background"></div>
@@ -37,16 +38,25 @@
   <!-- LOGIN VIEW -->
   <div id="login_view" class="auth-container">
     <div class="panel auth-panel">
+      <div style="margin-bottom: 0.5rem;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+      </div>
       <h2>Welcome Back</h2>
-      <p class="panel-desc">Sign in or register to access the pipeline.</p>
+      <p class="panel-desc">Sign in to access your lead pipeline.</p>
       
+      <!-- Google Sign-In -->
+      <div id="google_btn_container"></div>
+
+      <!-- OR Divider -->
+      <div class="google-auth-divider">OR</div>
+
       <div class="auth-form">
         <input type="email" id="auth_email" placeholder="Email Address" class="input-field" />
         <input type="password" id="auth_password" placeholder="Password" class="input-field" />
         
         <div class="button-group" style="margin-top: 1rem;">
           <button onclick="login()" id="login_btn" class="btn btn-primary">Login</button>
-          <button onclick="register()" id="register_btn" class="btn btn-secondary">Register</button>
+          <button onclick="register()" id="register_btn" class="btn btn-secondary">Create Account</button>
         </div>
         <p id="auth_status" class="status-msg"></p>
       </div>
@@ -461,6 +471,59 @@
       }
     }
 
+    // --- GOOGLE AUTH ---
+    async function initGoogleAuth() {
+      try {
+        const res = await fetch('/api/config/auth');
+        const config = await res.json();
+        const clientId = config.google_client_id;
+        if (!clientId) return; // Google login not configured yet
+
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        google.accounts.id.renderButton(
+          document.getElementById('google_btn_container'),
+          {
+            theme: 'outline',
+            size: 'large',
+            shape: 'pill',
+            width: 340,
+            text: 'signin_with',
+          }
+        );
+      } catch (e) {
+        // If Google SDK not loaded yet or client_id missing, silently skip
+        console.warn('Google auth not available:', e);
+      }
+    }
+
+    async function handleGoogleCredential(response) {
+      const status = document.getElementById('auth_status');
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('access_token', data.access_token);
+          checkAuth();
+        } else {
+          status.textContent = data.detail || 'Google sign-in failed.';
+          status.className = 'status-msg error';
+        }
+      } catch (e) {
+        status.textContent = 'Google sign-in failed.';
+        status.className = 'status-msg error';
+      }
+    }
+
     async function login() {
       const email = document.getElementById('auth_email').value;
       const password = document.getElementById('auth_password').value;
@@ -488,6 +551,7 @@
         status.textContent = "Login failed.";
       }
     }
+
 
     async function register() {
       const email = document.getElementById('auth_email').value;
@@ -1004,6 +1068,11 @@
 
     // Init App
     checkAuth();
+    // Init Google auth button (will silently no-op if client_id not set in admin)
+    window.addEventListener('load', () => {
+      // Wait a tick for the GSI script to be ready
+      setTimeout(initGoogleAuth, 100);
+    });
 
     // Check for Stripe success in URL
     const urlParams = new URLSearchParams(window.location.search);

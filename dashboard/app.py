@@ -37,6 +37,11 @@ pipeline = LeadPipeline(CONFIG)
 _run_lock = threading.Lock()
 _run_thread = None
 
+from exporter.db import store
+@app.get("/api/config/auth")
+def get_auth_config():
+    return {"google_client_id": store.get_setting("google_client_id", "")}
+
 
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):

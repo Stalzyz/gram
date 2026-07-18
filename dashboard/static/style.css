@@ -491,24 +491,24 @@ pre#log_tail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px;
     letter-spacing: 0.05em;
 }
 
-/* PREMIUM LOGIN REDESIGN */
+/* PREMIUM LOGIN REDESIGN (LIGHT THEME) */
 #login_view.auth-container {
-    background: radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.15), transparent 40%),
-                radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.15), transparent 40%),
-                #020617; /* Very dark blue/slate */
+    background: radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.08), transparent 40%),
+                #f8fafc; /* Light slate/gray background */
     z-index: 9999;
     backdrop-filter: none;
 }
 
 #login_view .auth-panel {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.05);
     border-radius: 24px;
     padding: 3.5rem 3rem;
-    color: #ffffff;
+    color: #0f172a;
     max-width: 440px;
     text-align: center;
     animation: premiumFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -527,14 +527,12 @@ pre#log_tail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px;
     font-size: 2.25rem;
     font-weight: 700;
     letter-spacing: -0.04em;
-    background: linear-gradient(to right, #ffffff, #94a3b8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #0f172a;
     margin-bottom: 0.75rem;
 }
 
 #login_view .panel-desc {
-    color: #94a3b8;
+    color: #64748b;
     font-size: 1.05rem;
     margin-bottom: 2.5rem;
 }
@@ -546,25 +544,26 @@ pre#log_tail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px;
 }
 
 #login_view .input-field {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
     border-radius: 12px;
     padding: 1.15rem 1.25rem;
     font-size: 1rem;
     transition: all 0.2s ease;
     width: 100%;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 #login_view .input-field::placeholder {
-    color: #64748b;
+    color: #94a3b8;
 }
 
 #login_view .input-field:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), inset 0 2px 4px rgba(0,0,0,0.02);
     outline: none;
-    background: rgba(255, 255, 255, 0.05);
+    background: #ffffff;
 }
 
 #login_view .button-group {
@@ -598,13 +597,40 @@ pre#log_tail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px;
 }
 
 #login_view .btn-secondary {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #cbd5e1;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 #login_view .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.google-auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    margin: 1.5rem 0;
+}
+.google-auth-divider::before, .google-auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e2e8f0;
+}
+.google-auth-divider::before {
+    margin-right: 1rem;
+}
+.google-auth-divider::after {
+    margin-left: 1rem;
+}
+
+#google_btn_container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
 }
