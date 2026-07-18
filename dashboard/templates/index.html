@@ -81,64 +81,6 @@
     </div>
   </div>
 
-  <!-- PREFERENCES MODAL -->
-  <div id="preferences_modal" class="modal-overlay" style="display: none;">
-    <div class="panel auth-panel">
-      <h2>Scraping Preferences</h2>
-      <p class="panel-desc">Configure your filters to only scrape the leads you actually want.</p>
-      
-      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
-        <div>
-          <label class="setting-label">Minimum Followers</label>
-          <input type="number" id="pref_min_followers" class="input-field" placeholder="e.g. 1000" />
-          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts with fewer followers.</p>
-        </div>
-
-        <div>
-          <label class="setting-label">Maximum Followers</label>
-          <input type="number" id="pref_max_followers" class="input-field" placeholder="e.g. 50000" />
-          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts with more followers (leave blank for no limit).</p>
-        </div>
-
-        <div>
-          <label class="setting-label">Target Locations</label>
-          <input type="text" id="pref_location_keywords" class="input-field" placeholder="e.g. London, UK, New York" />
-          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts that don't mention these in their bio or website (comma separated, leave blank for any).</p>
-        </div>
-
-        <div>
-          <label class="setting-label">Target Categories</label>
-          <input type="text" id="pref_target_categories" class="input-field" placeholder="e.g. Restaurant, Clothing (Brand)" />
-          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts whose official Instagram category doesn't match (comma separated).</p>
-        </div>
-        
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <input type="checkbox" id="pref_require_website" style="width:16px;height:16px;" />
-          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_website">Require Website Link in Bio</label>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <input type="checkbox" id="pref_require_shopify" style="width:16px;height:16px;" />
-          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_shopify">Must be a Shopify store</label>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <input type="checkbox" id="pref_require_woocommerce" style="width:16px;height:16px;" />
-          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_woocommerce">Must be a WooCommerce store</label>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <input type="checkbox" id="pref_require_meta_pixel" style="width:16px;height:16px;" />
-          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_meta_pixel">Must have Meta Pixel installed</label>
-        </div>
-      </div>
-      
-      <div class="button-group" style="margin-top: 2rem;">
-        <button onclick="saveUserPreferences()" class="btn btn-primary" style="flex:1;">Save Filters</button>
-        <button onclick="hidePreferences()" class="btn btn-secondary" style="flex:1;">Cancel</button>
-      </div>
-    </div>
-  </div>
 
   <!-- DASHBOARD VIEW -->
   <main id="dashboard_view" style="display: none;">
@@ -148,12 +90,55 @@
       <div class="lead-gen-form">
         <input type="text" id="discover_keyword" placeholder="Enter keyword (e.g., 'clothing brand')" class="input-field" />
         <input type="number" id="discover_limit" placeholder="Limit" value="20" class="input-field num-input" />
-        <button onclick="showPreferences()" class="btn btn-secondary" title="Filters & Preferences">⚙️ Filters</button>
         <button id="discover_btn" class="btn btn-primary" onclick="startDiscovery()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span id="discover_btn_text">Discover & Scrape (-50 Credits)</span>
         </button>
       </div>
+
+      <!-- INLINE PREFERENCES -->
+      <div id="inline_preferences" style="background: var(--surface-light); padding: 1.5rem; border-radius: 0.5rem; margin-top: 1rem; border: 1px solid var(--border-color);">
+        <h3 style="margin-top:0; margin-bottom: 1rem; font-size:1.1rem;">Scraping Filters</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label class="setting-label">Minimum Followers</label>
+            <input type="number" id="pref_min_followers" class="input-field" placeholder="e.g. 1000" />
+          </div>
+          <div>
+            <label class="setting-label">Maximum Followers</label>
+            <input type="number" id="pref_max_followers" class="input-field" placeholder="e.g. 50000" />
+          </div>
+          <div>
+            <label class="setting-label">Target Locations</label>
+            <input type="text" id="pref_location_keywords" class="input-field" placeholder="e.g. London, UK" />
+          </div>
+          <div>
+            <label class="setting-label">Target Categories</label>
+            <input type="text" id="pref_target_categories" class="input-field" placeholder="e.g. Restaurant" />
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="pref_require_website" /> <label for="pref_require_website" style="margin:0;cursor:pointer;font-size:0.9rem;">Require Website Link</label>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="pref_require_shopify" /> <label for="pref_require_shopify" style="margin:0;cursor:pointer;font-size:0.9rem;">Must be Shopify</label>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="pref_require_woocommerce" /> <label for="pref_require_woocommerce" style="margin:0;cursor:pointer;font-size:0.9rem;">Must be WooCommerce</label>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="pref_require_meta_pixel" /> <label for="pref_require_meta_pixel" style="margin:0;cursor:pointer;font-size:0.9rem;">Must have Meta Pixel</label>
+          </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; text-align: right;">
+          <span id="pref_save_status" style="font-size:0.9rem; color:var(--success); margin-right: 1rem;"></span>
+          <button onclick="saveUserPreferences()" class="btn-small btn-secondary">Save Filters</button>
+        </div>
+      </div>
+
       <p id="discover_status" class="status-msg"></p>
     </section>
 
@@ -461,6 +446,7 @@
         document.getElementById('header_right').style.display = 'flex';
         fetchUser();
         fetchCampaigns();
+        loadPreferences();
         if (!pollInterval) pollInterval = setInterval(refresh, 2500);
       } else {
         document.getElementById('login_view').style.display = 'flex';
@@ -634,8 +620,7 @@
     }
 
     // --- PREFERENCES ---
-    async function showPreferences() {
-        document.getElementById('preferences_modal').style.display = 'flex';
+    async function loadPreferences() {
         try {
             const res = await fetch('/api/user/preferences', { headers: getAuthHeaders() });
             if (res.ok) {
@@ -650,10 +635,6 @@
                 document.getElementById('pref_require_meta_pixel').checked = prefs.require_meta_pixel || false;
             }
         } catch (e) {}
-    }
-
-    function hidePreferences() {
-        document.getElementById('preferences_modal').style.display = 'none';
     }
 
     async function saveUserPreferences() {
@@ -675,7 +656,9 @@
                     deep_enrichment: false 
                 })
             });
-            hidePreferences();
+            const statusLabel = document.getElementById('pref_save_status');
+            statusLabel.textContent = "Filters Saved!";
+            setTimeout(() => { statusLabel.textContent = ''; }, 3000);
         } catch (e) {
             alert('Failed to save preferences');
         }
