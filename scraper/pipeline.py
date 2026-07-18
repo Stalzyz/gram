@@ -120,6 +120,16 @@ class LeadPipeline:
         else:
             location_matched = True # No filter applied
 
+        # Category Check
+        target_categories = getattr(self, "prefs", {}).get("target_categories", "")
+        cat_keys = [k.strip().lower() for k in target_categories.split(",")] if target_categories else []
+        ig_category = ig_data.get("category_name", "").lower()
+        if cat_keys and ig_category:
+            if not any(k in ig_category for k in cat_keys if k):
+                raise SkipFilterError("category_mismatch")
+        elif cat_keys and not ig_category:
+            raise SkipFilterError("category_mismatch")
+
         row.update({
             "Profile Name": ig_data.get("name", ""),
             "Business Category": ig_data.get("category_name", ""),
@@ -144,6 +154,16 @@ class LeadPipeline:
                 
         if loc_keys and not location_matched:
             raise SkipFilterError("location_mismatch")
+            
+        # Tech Stack Checks
+        prefs = getattr(self, "prefs", {})
+        if prefs.get("require_shopify") and not site_result.get("is_shopify"):
+            raise SkipFilterError("missing_shopify")
+        if prefs.get("require_woocommerce") and not site_result.get("is_woocommerce"):
+            raise SkipFilterError("missing_woocommerce")
+        if prefs.get("require_meta_pixel") and not site_result.get("has_meta_pixel"):
+            raise SkipFilterError("missing_meta_pixel")
+            
         row.update({
             "Email": site_result.get("email", ""),
             "Phone Number": site_result.get("phone", ""),

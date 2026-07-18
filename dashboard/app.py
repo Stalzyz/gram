@@ -72,6 +72,10 @@ class UserPreferences(BaseModel):
     min_followers: int = 0
     max_followers: Optional[int] = None
     location_keywords: Optional[str] = None
+    require_shopify: bool = False
+    require_woocommerce: bool = False
+    require_meta_pixel: bool = False
+    target_categories: Optional[str] = None
     require_website: bool = False
     deep_enrichment: bool = False
 

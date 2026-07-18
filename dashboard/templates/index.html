@@ -105,10 +105,31 @@
           <input type="text" id="pref_location_keywords" class="input-field" placeholder="e.g. London, UK, New York" />
           <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts that don't mention these in their bio or website (comma separated, leave blank for any).</p>
         </div>
+
+        <div>
+          <label class="setting-label">Target Categories</label>
+          <input type="text" id="pref_target_categories" class="input-field" placeholder="e.g. Restaurant, Clothing (Brand)" />
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts whose official Instagram category doesn't match (comma separated).</p>
+        </div>
         
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <input type="checkbox" id="pref_require_website" style="width:16px;height:16px;" />
           <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_website">Require Website Link in Bio</label>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="checkbox" id="pref_require_shopify" style="width:16px;height:16px;" />
+          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_shopify">Must be a Shopify store</label>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="checkbox" id="pref_require_woocommerce" style="width:16px;height:16px;" />
+          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_woocommerce">Must be a WooCommerce store</label>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="checkbox" id="pref_require_meta_pixel" style="width:16px;height:16px;" />
+          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_meta_pixel">Must have Meta Pixel installed</label>
         </div>
       </div>
       
@@ -622,7 +643,11 @@
                 document.getElementById('pref_min_followers').value = prefs.min_followers || '';
                 document.getElementById('pref_max_followers').value = prefs.max_followers || '';
                 document.getElementById('pref_location_keywords').value = prefs.location_keywords || '';
+                document.getElementById('pref_target_categories').value = prefs.target_categories || '';
                 document.getElementById('pref_require_website').checked = prefs.require_website || false;
+                document.getElementById('pref_require_shopify').checked = prefs.require_shopify || false;
+                document.getElementById('pref_require_woocommerce').checked = prefs.require_woocommerce || false;
+                document.getElementById('pref_require_meta_pixel').checked = prefs.require_meta_pixel || false;
             }
         } catch (e) {}
     }
@@ -635,12 +660,20 @@
         const min_followers = parseInt(document.getElementById('pref_min_followers').value) || 0;
         const max_followers = parseInt(document.getElementById('pref_max_followers').value) || null;
         const location_keywords = document.getElementById('pref_location_keywords').value || null;
+        const target_categories = document.getElementById('pref_target_categories').value || null;
         const require_website = document.getElementById('pref_require_website').checked;
+        const require_shopify = document.getElementById('pref_require_shopify').checked;
+        const require_woocommerce = document.getElementById('pref_require_woocommerce').checked;
+        const require_meta_pixel = document.getElementById('pref_require_meta_pixel').checked;
         try {
             await fetch('/api/user/preferences', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-                body: JSON.stringify({ min_followers, max_followers, location_keywords, require_website, deep_enrichment: false })
+                body: JSON.stringify({ 
+                    min_followers, max_followers, location_keywords, target_categories, 
+                    require_website, require_shopify, require_woocommerce, require_meta_pixel, 
+                    deep_enrichment: false 
+                })
             });
             hidePreferences();
         } catch (e) {
