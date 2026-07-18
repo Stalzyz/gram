@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IG Lead Pipeline Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <div class="app-background"></div>
+  
+  <header class="glass-header">
+    <div class="header-content">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="glow-icon"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+        <h1>Pipeline Dashboard</h1>
+      </div>
+      <div class="header-right" id="header_right" style="display: none; align-items: center; gap: 1rem;">
+        <div class="credits-badge">
+          Credits: <span id="user_credits">...</span>
+          <button onclick="showCheckout()" class="btn-small">Buy</button>
+        </div>
+        <button id="admin_nav_btn" onclick="showAdmin()" class="btn-small btn-secondary" style="display: none;">Admin Panel</button>
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          <span>Live</span>
+        </div>
+        <button onclick="logout()" class="btn-small btn-secondary">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOGIN VIEW -->
+  <div id="login_view" class="auth-container">
+    <div class="panel auth-panel">
+      <h2>Welcome Back</h2>
+      <p class="panel-desc">Sign in or register to access the pipeline.</p>
+      
+      <div class="auth-form">
+        <input type="email" id="auth_email" placeholder="Email Address" class="input-field" />
+        <input type="password" id="auth_password" placeholder="Password" class="input-field" />
+        
+        <div class="button-group" style="margin-top: 1rem;">
+          <button onclick="login()" id="login_btn" class="btn btn-primary">Login</button>
+          <button onclick="register()" id="register_btn" class="btn btn-secondary">Register</button>
+        </div>
+        <p id="auth_status" class="status-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
+  <div id="checkout_modal" class="modal-overlay" style="display: none;">
+    <div class="panel checkout-panel">
+      <h2>Buy Credits</h2>
+      <p class="panel-desc">Top up your account to generate more leads.</p>
+      
+      <div class="pricing-cards">
+        <div class="pricing-card">
+          <h3>Starter</h3>
+          <p class="price">$10 <span>for 1,000 leads</span></p>
+          <div class="button-group">
+            <button onclick="buyStripe('starter')" class="btn btn-primary btn-full">Pay with Card</button>
+            <button onclick="buyRazorpay('starter')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
+          </div>
+        </div>
+        <div class="pricing-card highlighted">
+          <h3>Pro</h3>
+          <p class="price">$40 <span>for 5,000 leads</span></p>
+          <div class="button-group">
+            <button onclick="buyStripe('pro')" class="btn btn-primary btn-full">Pay with Card</button>
+            <button onclick="buyRazorpay('pro')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
+          </div>
+        </div>
+      </div>
+      <button onclick="hideCheckout()" class="btn btn-secondary" style="margin-top: 1.5rem;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- PREFERENCES MODAL -->
+  <div id="preferences_modal" class="modal-overlay" style="display: none;">
+    <div class="panel auth-panel">
+      <h2>Scraping Preferences</h2>
+      <p class="panel-desc">Configure your filters to only scrape the leads you actually want.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+        <div>
+          <label class="setting-label">Minimum Followers</label>
+          <input type="number" id="pref_min_followers" class="input-field" placeholder="e.g. 1000" />
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Skip accounts with fewer followers.</p>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <input type="checkbox" id="pref_require_website" style="width:16px;height:16px;" />
+          <label class="setting-label" style="margin:0; cursor:pointer;" for="pref_require_website">Require Website Link in Bio</label>
+        </div>
+      </div>
+      
+      <div class="button-group" style="margin-top: 2rem;">
+        <button onclick="saveUserPreferences()" class="btn btn-primary" style="flex:1;">Save Filters</button>
+        <button onclick="hidePreferences()" class="btn btn-secondary" style="flex:1;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <main id="dashboard_view" style="display: none;">
+    <section class="panel lead-gen-panel">
+      <h2>Generate New Leads</h2>
+      <p class="panel-desc">Discover Instagram accounts in your niche and automatically start scraping.</p>
+      <div class="lead-gen-form">
+        <input type="text" id="discover_keyword" placeholder="Enter keyword (e.g., 'clothing brand')" class="input-field" />
+        <input type="number" id="discover_limit" placeholder="Limit" value="20" class="input-field num-input" />
+        <button onclick="showPreferences()" class="btn btn-secondary" title="Filters & Preferences">⚙️ Filters</button>
+        <button id="discover_btn" class="btn btn-primary" onclick="startDiscovery()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span id="discover_btn_text">Discover & Scrape (-50 Credits)</span>
+        </button>
+      </div>
+      <p id="discover_status" class="status-msg"></p>
+    </section>
+
+    <section class="cards">
+      <div class="card">
+        <div class="card-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="card-data">
+          <span id="processed" class="counter">0</span>
+          <label>Processed</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="card-data">
+          <span id="success_rate" class="counter">0%</span>
+          <label>Success Rate</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+        <div class="card-data">
+          <span id="failed" class="counter">0</span>
+          <label>Failed</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="card-data">
+          <span id="active_workers" class="counter">0</span>
+          <label>Active Workers</label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon yellow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="card-data">
+          <span id="eta" class="counter">--</span>
+          <label>Est. Remaining</label>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-layout">
+      <div class="left-col">
+        <section class="panel exports-panel">
+          <h2>Data Export</h2>
+          <p class="panel-desc">Download enriched leads</p>
+          <div class="button-group">
+            <button onclick="exportData('csv')" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+            <button onclick="exportData('xlsx')" class="btn btn-secondary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Export Excel
+            </button>
+          </div>
+        </section>
+
+        <section class="panel failed-list">
+          <h2>Failed Profiles</h2>
+          <div class="failed-container">
+            <ul id="failed_list"></ul>
+          </div>
+        </section>
+
+        <!-- MY CAMPAIGNS -->
+        <section class="panel">
+          <h2>My Campaigns</h2>
+          <p class="panel-desc">Your past scrapes. Download the CSV at any time.</p>
+          <div style="overflow-x: auto; margin-top: 1rem;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-secondary);">
+                  <th style="padding: 0.75rem 0.5rem;">Campaign</th>
+                  <th style="padding: 0.75rem 0.5rem;">Leads</th>
+                  <th style="padding: 0.75rem 0.5rem;">Success</th>
+                  <th style="padding: 0.75rem 0.5rem;">Date</th>
+                  <th style="padding: 0.75rem 0.5rem;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="campaigns_tbody">
+                <tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Loading campaigns...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div class="right-col">
+        <section class="panel logs-panel">
+          <h2>System Logs</h2>
+          <div class="terminal">
+            <div class="terminal-header">
+              <span class="mac-btn close"></span>
+              <span class="mac-btn minimize"></span>
+              <span class="mac-btn expand"></span>
+              <span class="terminal-title">pipeline.log</span>
+            </div>
+            <pre id="log_tail"></pre>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- ADMIN VIEW -->
+  <main id="admin_view" style="display: none; padding: 0 2rem 2rem;">
+
+    <!-- Admin Sub-navigation -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; padding-top: 1.5rem;">
+        <button onclick="switchAdminTab('dashboard')" id="admin_tab_dashboard" class="btn-small btn-primary">Dashboard</button>
+        <button onclick="switchAdminTab('customers')" id="admin_tab_customers" class="btn-small btn-secondary">Customers</button>
+        <button onclick="switchAdminTab('settings')" id="admin_tab_settings" class="btn-small btn-secondary">Settings</button>
+        <div style="flex-grow: 1;"></div>
+        <button onclick="hideAdmin()" class="btn-small btn-secondary">← Back to Scraper</button>
+    </div>
+
+    <!-- ====== DASHBOARD TAB ====== -->
+    <div id="admin_tab_content_dashboard">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="card">
+          <div class="card-icon blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="card-data">
+            <span id="admin_total_users" class="counter">0</span>
+            <label>Total Users</label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="card-data">
+            <span id="admin_total_revenue" class="counter">$0</span>
+            <label>Total Revenue</label>
+          </div>
+        </div>
+      </div>
+      <section class="panel">
+        <h2>Recent Transactions</h2>
+        <p class="panel-desc">Latest payments received across all gateways.</p>
+        <div class="failed-container" style="max-height: 350px; margin-top: 1rem;">
+          <ul id="admin_transactions_list"><li class="empty-state">Loading...</li></ul>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====== CUSTOMERS TAB ====== -->
+    <div id="admin_tab_content_customers" style="display: none;">
+      <section class="panel">
+        <h2>Customers</h2>
+        <p class="panel-desc">Manage user accounts and gift credits.</p>
+        <div style="overflow-x: auto; margin-top: 1rem;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-secondary);">
+                <th style="padding: 0.75rem 1rem;">ID</th>
+                <th style="padding: 0.75rem 1rem;">Email</th>
+                <th style="padding: 0.75rem 1rem;">Credits</th>
+                <th style="padding: 0.75rem 1rem;">Total Spent</th>
+                <th style="padding: 0.75rem 1rem;">Joined</th>
+                <th style="padding: 0.75rem 1rem;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin_customers_tbody">
+              <tr><td colspan="6" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Loading customers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====== SETTINGS TAB ====== -->
+    <div id="admin_tab_content_settings" style="display: none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+
+        <!-- ── Column 1: Brand & Theme ── -->
+        <section class="panel" style="margin-bottom:0;">
+          <h2 style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M20.2 14.3a8 8 0 1 0-8.5 5.7"/><path d="M22 22l-4.5-4.5"/></svg>
+            Brand &amp; Theme
+          </h2>
+          <p class="panel-desc">Identity shown on invoices &amp; the platform.</p>
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
+            <div>
+              <label class="setting-label">Brand Name</label>
+              <input type="text" id="setting_brand_name" class="input-field" placeholder="My SaaS Co." />
+            </div>
+            <div>
+              <label class="setting-label">Support Email</label>
+              <input type="email" id="setting_support_email" class="input-field" placeholder="support@example.com" />
+            </div>
+            <div>
+              <label class="setting-label">Business Address</label>
+              <textarea id="setting_business_address" class="input-field" rows="3" placeholder="123 Main St, City, State - 000000" style="resize:vertical;font-family:inherit;font-size:14px;"></textarea>
+            </div>
+            <div>
+              <label class="setting-label">Logo URL</label>
+              <input type="text" id="setting_logo_url" class="input-field" placeholder="https://cdn.example.com/logo.png" />
+            </div>
+            <div>
+              <label class="setting-label">Brand Primary Color</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input type="color" id="setting_brand_color" value="#2563eb" style="width:44px;height:38px;border:1px solid var(--border-color);border-radius:8px;cursor:pointer;background:none;padding:2px;" />
+                <input type="text" id="setting_brand_color_hex" class="input-field" placeholder="#2563eb" style="flex:1;" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Column 2: Payments + GST ── -->
+        <section class="panel" style="margin-bottom:0;">
+          <h2 style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Payments &amp; Tax
+          </h2>
+          <p class="panel-desc">Gateway keys, pricing, and GST.</p>
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
+            <div style="background:rgba(37,99,235,0.05);border:1px solid rgba(37,99,235,0.15);border-radius:10px;padding:12px;">
+              <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#2563eb;margin-bottom:10px;">Stripe</p>
+              <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                <div><label class="setting-label">Secret Key</label><input type="password" id="setting_stripe_secret_key" class="input-field" placeholder="sk_live_..." /></div>
+                <div><label class="setting-label">Publishable Key</label><input type="text" id="setting_stripe_publishable_key" class="input-field" placeholder="pk_live_..." /></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                  <div><label class="setting-label">Starter (Cents)</label><input type="number" id="setting_stripe_starter_price" class="input-field" placeholder="1000" /></div>
+                  <div><label class="setting-label">Pro (Cents)</label><input type="number" id="setting_stripe_pro_price" class="input-field" placeholder="4000" /></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:rgba(5,150,105,0.05);border:1px solid rgba(5,150,105,0.15);border-radius:10px;padding:12px;">
+              <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#059669;margin-bottom:10px;">Razorpay</p>
+              <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                <div><label class="setting-label">Key ID</label><input type="text" id="setting_razorpay_key_id" class="input-field" placeholder="rzp_live_..." /></div>
+                <div><label class="setting-label">Key Secret</label><input type="password" id="setting_razorpay_key_secret" class="input-field" placeholder="Key secret..." /></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                  <div><label class="setting-label">Starter (Paise)</label><input type="number" id="setting_razorpay_starter_price" class="input-field" placeholder="80000" /></div>
+                  <div><label class="setting-label">Pro (Paise)</label><input type="number" id="setting_razorpay_pro_price" class="input-field" placeholder="320000" /></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:10px;padding:12px;">
+              <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7c3aed;margin-bottom:10px;">Tax / GST</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                <div><label class="setting-label">GSTIN</label><input type="text" id="setting_gstin" class="input-field" placeholder="22AAAAA0000A1Z5" /></div>
+                <div><label class="setting-label">GST Rate (%)</label><input type="number" id="setting_gst_rate" class="input-field" placeholder="18" min="0" max="100" /></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Column 3: Auth & Platform ── -->
+        <section class="panel" style="margin-bottom:0;">
+          <h2 style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 12.1c0-.7-.1-1.4-.2-2.1H12v4h5.3c-.2 1.1-.9 2.1-1.9 2.7v2.3h3c1.8-1.7 2.8-4.1 2.8-6.9z"/><path d="M12 22c2.7 0 4.9-.9 6.5-2.4l-3-2.3c-.9.6-2 1-3.5 1-2.7 0-4.9-1.8-5.7-4.2H3.2v2.4C4.8 19.7 8.2 22 12 22z"/><path d="M6.3 14.1c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.7H3.2C2.4 9.3 2 11.1 2 13s.4 3.7 1.2 5.3l3.1-2.2z"/><path d="M12 5.8c1.5 0 2.9.5 3.9 1.5l2.9-2.9C17.2 2.9 14.8 2 12 2 8.2 2 4.8 4.3 3.2 7.7l3.1 2.4C7.1 7.6 9.3 5.8 12 5.8z"/></svg>
+            Auth &amp; Platform
+          </h2>
+          <p class="panel-desc">Google login and onboarding defaults.</p>
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
+            <div><label class="setting-label">Google Client ID</label><input type="text" id="setting_google_client_id" class="input-field" placeholder="....apps.googleusercontent.com" /></div>
+            <div><label class="setting-label">Google Client Secret</label><input type="password" id="setting_google_client_secret" class="input-field" placeholder="Client secret..." /></div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border-color);margin:1.5rem 0;" />
+
+          <h2 style="font-size:0.95rem;margin-bottom:0.25rem;">Onboarding</h2>
+          <p class="panel-desc">Credits gifted to new users on signup.</p>
+          <div style="margin-top:1rem;">
+            <label class="setting-label">Free Credits (on sign up)</label>
+            <input type="number" id="setting_free_credits" class="input-field" placeholder="10" />
+          </div>
+
+          <button onclick="saveAdminSettings()" class="btn btn-primary" style="margin-top:1.5rem;width:100%;">
+            Save All Settings
+          </button>
+          <p id="admin_settings_status" class="status-msg" style="text-align:center;margin-top:0.75rem;"></p>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+
+  <script>
+    let activeCampaign = 'default';
+    let pollInterval = null;
+
+    // --- AUTHENTICATION ---
+    function getToken() {
+      return localStorage.getItem('access_token');
+    }
+
+    function getAuthHeaders() {
+      const token = getToken();
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
+    function logout() {
+      localStorage.removeItem('access_token');
+      checkAuth();
+    }
+
+    function checkAuth() {
+      if (getToken()) {
+        document.getElementById('login_view').style.display = 'none';
+        document.getElementById('dashboard_view').style.display = 'block';
+        document.getElementById('admin_view').style.display = 'none';
+        document.getElementById('header_right').style.display = 'flex';
+        fetchUser();
+        fetchCampaigns();
+        if (!pollInterval) pollInterval = setInterval(refresh, 2500);
+      } else {
+        document.getElementById('login_view').style.display = 'flex';
+        document.getElementById('dashboard_view').style.display = 'none';
+        document.getElementById('admin_view').style.display = 'none';
+        document.getElementById('header_right').style.display = 'none';
+        document.getElementById('admin_nav_btn').style.display = 'none';
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById('auth_email').value;
+      const password = document.getElementById('auth_password').value;
+      const status = document.getElementById('auth_status');
+      
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('access_token', data.access_token);
+          checkAuth();
+        } else {
+          status.textContent = data.detail;
+          status.className = 'status-msg error';
+        }
+      } catch (e) {
+        status.textContent = "Login failed.";
+      }
+    }
+
+    async function register() {
+      const email = document.getElementById('auth_email').value;
+      const password = document.getElementById('auth_password').value;
+      const status = document.getElementById('auth_status');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('access_token', data.access_token);
+          checkAuth();
+        } else {
+          status.textContent = data.detail;
+          status.className = 'status-msg error';
+        }
+      } catch (e) {
+        status.textContent = "Registration failed.";
+      }
+    }
+
+    async function fetchUser() {
+      try {
+        const res = await fetch('/api/auth/me', { headers: getAuthHeaders() });
+        if (res.status === 401) {
+          logout();
+          return;
+        }
+        const data = await res.json();
+        document.getElementById('user_credits').textContent = data.credits;
+        if (data.is_admin) {
+            document.getElementById('admin_nav_btn').style.display = 'inline-block';
+        }
+      } catch (e) {}
+    }
+
+    // --- CHECKOUT ---
+    function showCheckout() {
+      document.getElementById('checkout_modal').style.display = 'flex';
+    }
+    function hideCheckout() {
+      document.getElementById('checkout_modal').style.display = 'none';
+    }
+
+    async function buyStripe(packageType) {
+      try {
+        const res = await fetch(`/api/billing/stripe/checkout?package=${packageType}`, {
+          method: 'POST',
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (e) {
+        alert("Stripe checkout failed");
+      }
+    }
+
+    async function buyRazorpay(packageType) {
+      try {
+        const res = await fetch(`/api/billing/razorpay/order?package=${packageType}`, {
+          method: 'POST',
+          headers: getAuthHeaders()
+        });
+        const orderData = await res.json();
+        
+        const options = {
+            "key": "rzp_test_123", // Replace with real key from env if needed
+            "amount": orderData.amount,
+            "currency": "INR",
+            "name": "Pipeline SaaS",
+            "description": `Purchase ${packageType} credits`,
+            "order_id": orderData.order_id,
+            "handler": async function (response) {
+                // Verify payment
+                const verifyRes = await fetch('/api/billing/razorpay/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        user_id: 1, // backend should resolve this securely, using a simple payload here
+                        credits: packageType === 'starter' ? 1000 : 5000
+                    })
+                });
+                if (verifyRes.ok) {
+                    alert("Payment Successful! Credits added.");
+                    hideCheckout();
+                    fetchUser();
+                } else {
+                    alert("Payment verification failed.");
+                }
+            },
+            "theme": { "color": "#2563eb" }
+        };
+        const rzp1 = new Razorpay(options);
+        rzp1.open();
+      } catch (e) {
+        alert("Razorpay checkout failed");
+      }
+    }
+
+
+    // --- DASHBOARD ---
+    async function exportData(type) {
+        const res = await fetch(`/api/export/${type}?campaign=${encodeURIComponent(activeCampaign)}`, {
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${activeCampaign}_leads.${type}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else if (res.status === 401) {
+            logout();
+        }
+    }
+
+    // --- PREFERENCES ---
+    async function showPreferences() {
+        document.getElementById('preferences_modal').style.display = 'flex';
+        try {
+            const res = await fetch('/api/user/preferences', { headers: getAuthHeaders() });
+            if (res.ok) {
+                const prefs = await res.json();
+                document.getElementById('pref_min_followers').value = prefs.min_followers || '';
+                document.getElementById('pref_require_website').checked = prefs.require_website || false;
+            }
+        } catch (e) {}
+    }
+
+    function hidePreferences() {
+        document.getElementById('preferences_modal').style.display = 'none';
+    }
+
+    async function saveUserPreferences() {
+        const min_followers = parseInt(document.getElementById('pref_min_followers').value) || 0;
+        const require_website = document.getElementById('pref_require_website').checked;
+        try {
+            await fetch('/api/user/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                body: JSON.stringify({ min_followers, require_website, deep_enrichment: false })
+            });
+            hidePreferences();
+        } catch (e) {
+            alert('Failed to save preferences');
+        }
+    }
+
+    // --- CAMPAIGNS ---
+    async function fetchCampaigns() {
+        try {
+            const res = await fetch('/api/user/campaigns', { headers: getAuthHeaders() });
+            if (res.ok) {
+                const campaigns = await res.json();
+                const tbody = document.getElementById('campaigns_tbody');
+                tbody.innerHTML = '';
+                if (campaigns.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No campaigns yet.</td></tr>';
+                    return;
+                }
+                campaigns.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                    const dt = new Date(c.last_updated).toLocaleDateString();
+                    tr.innerHTML = `
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 500;">${c.campaign}</td>
+                        <td style="padding: 0.75rem 0.5rem;">${c.total}</td>
+                        <td style="padding: 0.75rem 0.5rem; color: #10b981;">${c.success}</td>
+                        <td style="padding: 0.75rem 0.5rem; color: var(--text-secondary);">${dt}</td>
+                        <td style="padding: 0.75rem 0.5rem;">
+                            <button onclick="downloadCampaign('${c.campaign}')" class="btn-small" style="background:rgba(37,99,235,0.1);color:#2563eb;border:1px solid rgba(37,99,235,0.2);">Download CSV</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (e) {}
+    }
+
+    function downloadCampaign(campaignName) {
+        activeCampaign = campaignName;
+        exportData('csv');
+    }
+
+
+    async function refresh() {
+      try {
+        const statsResp = await fetch(`/api/stats?campaign=${encodeURIComponent(activeCampaign)}`, {
+            headers: getAuthHeaders()
+        });
+        if (statsResp.status === 401) {
+            logout();
+            return;
+        }
+        if (!statsResp.ok) return;
+        const stats = await statsResp.json();
+        
+        updateCounter('processed', `${stats.processed} / ${stats.total}`);
+        updateCounter('success_rate', stats.success_rate_pct + '%');
+        updateCounter('failed', stats.failed);
+        updateCounter('active_workers', stats.active_workers);
+        updateCounter('eta', stats.eta_seconds > 0 ? Math.round(stats.eta_seconds / 60) + ' min' : '--');
+
+        const failedList = document.getElementById('failed_list');
+        failedList.innerHTML = '';
+        if (stats.failed_profiles.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'empty-state';
+            li.textContent = 'No failures yet ✨';
+            failedList.appendChild(li);
+        } else {
+            stats.failed_profiles.forEach(p => {
+              const li = document.createElement('li');
+              li.innerHTML = `<strong>${p.username}</strong><span class="error-msg">${p.error}</span>`;
+              failedList.appendChild(li);
+            });
+        }
+
+        const logsResp = await fetch('/api/logs', { headers: getAuthHeaders() });
+        if (logsResp.ok) {
+            const logs = await logsResp.json();
+            const logEl = document.getElementById('log_tail');
+            const isScrolledToBottom = logEl.scrollHeight - logEl.clientHeight <= logEl.scrollTop + 10;
+            logEl.textContent = logs.lines.join('\n');
+            if (isScrolledToBottom) {
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+        fetchUser(); // Refresh credits
+      } catch (e) {
+          console.error("Failed to fetch dashboard data", e);
+      }
+    }
+
+    function updateCounter(id, newValue) {
+        const el = document.getElementById(id);
+        if (el && el.textContent !== String(newValue)) {
+            el.textContent = newValue;
+            el.parentElement.parentElement.classList.remove('pulse-update');
+            void el.offsetWidth;
+            el.parentElement.parentElement.classList.add('pulse-update');
+        }
+    }
+
+    async function startDiscovery() {
+        const keyword = document.getElementById('discover_keyword').value;
+        const limit = parseInt(document.getElementById('discover_limit').value) || 20;
+        const btn = document.getElementById('discover_btn');
+        const btnText = document.getElementById('discover_btn_text');
+        const status = document.getElementById('discover_status');
+
+        if (!keyword) {
+            status.textContent = 'Please enter a keyword first.';
+            status.className = 'status-msg error';
+            return;
+        }
+
+        btn.disabled = true;
+        btnText.textContent = 'Discovering...';
+        status.textContent = 'Searching the web for leads... this may take a moment.';
+        status.className = 'status-msg info';
+
+        try {
+            const res = await fetch('/api/discover', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({ keyword, limit })
+            });
+            
+            if (res.status === 401) {
+                logout();
+                return;
+            }
+            
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') {
+                throw new Error(data.message || 'Discovery failed.');
+            }
+
+            status.textContent = `Found ${data.count} leads. Starting scraper...`;
+            activeCampaign = keyword;
+            
+            const runRes = await fetch(`/api/run?input_csv=${encodeURIComponent(data.csv_path)}&workers=4&campaign=${encodeURIComponent(activeCampaign)}`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+            
+            if (runRes.status === 402) {
+                 status.textContent = `Insufficient credits to start scraping.`;
+                 status.className = 'status-msg error';
+                 showCheckout();
+            } else if (runRes.status === 409) {
+                status.textContent = `Found ${data.count} leads. Scraper is already running!`;
+                status.className = 'status-msg warning';
+            } else if (runRes.ok) {
+                status.textContent = `Success! Now scraping ${data.count} leads in the background (-50 Credits).`;
+                status.className = 'status-msg success';
+                fetchUser();
+            } else {
+                throw new Error('Failed to start scraper.');
+            }
+        } catch (e) {
+            status.textContent = `Error: ${e.message}`;
+            status.className = 'status-msg error';
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Discover & Scrape (-50 Credits)';
+            setTimeout(() => { if(status.className.includes('success')) status.textContent = ''; }, 5000);
+        }
+    }
+
+    // --- ADMIN PANEL ---
+    function switchAdminTab(tab) {
+        document.getElementById('admin_tab_content_dashboard').style.display = 'none';
+        document.getElementById('admin_tab_content_customers').style.display = 'none';
+        document.getElementById('admin_tab_content_settings').style.display = 'none';
+        
+        document.getElementById('admin_tab_dashboard').className = 'btn-small btn-secondary';
+        document.getElementById('admin_tab_customers').className = 'btn-small btn-secondary';
+        document.getElementById('admin_tab_settings').className = 'btn-small btn-secondary';
+        
+        document.getElementById('admin_tab_content_' + tab).style.display = (tab === 'customers') ? 'block' : 'grid';
+        document.getElementById('admin_tab_' + tab).className = 'btn-small btn-primary';
+    }
+
+    function showAdmin() {
+      document.getElementById('dashboard_view').style.display = 'none';
+      document.getElementById('admin_view').style.display = 'block';
+      fetchAdminData();
+      fetchAdminCustomers();
+    }
+
+    function hideAdmin() {
+      document.getElementById('admin_view').style.display = 'none';
+      document.getElementById('dashboard_view').style.display = 'block';
+    }
+    
+    async function fetchAdminCustomers() {
+        try {
+            const res = await fetch('/api/admin/customers', { headers: getAuthHeaders() });
+            if (res.ok) {
+                const customers = await res.json();
+                const tbody = document.getElementById('admin_customers_tbody');
+                tbody.innerHTML = '';
+                customers.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+                    tr.innerHTML = `
+                        <td style="padding: 0.75rem;">#${c.id}</td>
+                        <td style="padding: 0.75rem;">${c.email}</td>
+                        <td style="padding: 0.75rem;"><strong id="admin_cust_cred_${c.id}">${c.credits}</strong></td>
+                        <td style="padding: 0.75rem; color: #10b981;">$${c.total_spent_usd.toFixed(2)}</td>
+                        <td style="padding: 0.75rem;">${c.created_at ? c.created_at.split('T')[0] : 'N/A'}</td>
+                        <td style="padding: 0.75rem;">
+                            <div style="display:flex;gap:0.5rem;">
+                              <button onclick="giftCredits(${c.id})" class="btn-small btn-secondary">Gift</button>
+                              <button onclick="viewInvoice(${c.id})" class="btn-small" style="background:rgba(37,99,235,0.1);color:#2563eb;border:1px solid rgba(37,99,235,0.2);">Invoice</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function giftCredits(userId) {
+        const amount = prompt("How many credits to gift user #" + userId + "?");
+        if (!amount || isNaN(amount)) return;
+        
+        try {
+            const res = await fetch(`/api/admin/customers/${userId}/gift`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                body: JSON.stringify({ credits: parseInt(amount) })
+            });
+            if (res.ok) {
+                alert(`Successfully gifted ${amount} credits!`);
+                fetchAdminCustomers();
+            }
+        } catch(e) {
+            alert("Failed to gift credits");
+        }
+    }
+
+    function viewInvoice(userId) {
+        // Build a temporary authenticated link by passing the token as a query param
+        const token = getToken();
+        const url = `/api/admin/customers/${userId}/invoice?token=${encodeURIComponent(token)}`;
+        window.open(url, '_blank');
+    }
+
+    async function fetchAdminData() {
+        try {
+            const salesRes = await fetch('/api/admin/sales', { headers: getAuthHeaders() });
+            if (salesRes.ok) {
+                const sales = await salesRes.json();
+                document.getElementById('admin_total_users').textContent = sales.total_users;
+                document.getElementById('admin_total_revenue').textContent = '$' + sales.total_revenue_usd.toFixed(2);
+                
+                const txList = document.getElementById('admin_transactions_list');
+                txList.innerHTML = '';
+                if (sales.recent_transactions.length === 0) {
+                    txList.innerHTML = '<li class="empty-state">No transactions yet</li>';
+                } else {
+                    sales.recent_transactions.forEach(tx => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>User #${tx.user_id}</strong><span style="color: #10b981;">+$${(tx.amount_cents/100).toFixed(2)} (${tx.gateway})</span>`;
+                        txList.appendChild(li);
+                    });
+                }
+            }
+
+            const settingsRes = await fetch('/api/admin/settings', { headers: getAuthHeaders() });
+            if (settingsRes.ok) {
+                const settings = await settingsRes.json();
+                // Brand & Theme
+                document.getElementById('setting_brand_name').value = settings.brand_name || '';
+                document.getElementById('setting_support_email').value = settings.support_email || '';
+                document.getElementById('setting_business_address').value = settings.business_address || '';
+                document.getElementById('setting_logo_url').value = settings.logo_url || '';
+                const brandColor = settings.brand_color || '#2563eb';
+                document.getElementById('setting_brand_color').value = brandColor;
+                document.getElementById('setting_brand_color_hex').value = brandColor;
+                // Payment settings
+                document.getElementById('setting_stripe_secret_key').value = settings.stripe_secret_key || '';
+                document.getElementById('setting_stripe_publishable_key').value = settings.stripe_publishable_key || '';
+                document.getElementById('setting_stripe_starter_price').value = settings.stripe_starter_price || '1000';
+                document.getElementById('setting_stripe_pro_price').value = settings.stripe_pro_price || '4000';
+                document.getElementById('setting_razorpay_key_id').value = settings.razorpay_key_id || '';
+                document.getElementById('setting_razorpay_key_secret').value = settings.razorpay_key_secret || '';
+                document.getElementById('setting_razorpay_starter_price').value = settings.razorpay_starter_price || '80000';
+                document.getElementById('setting_razorpay_pro_price').value = settings.razorpay_pro_price || '320000';
+                // GST
+                document.getElementById('setting_gstin').value = settings.gstin || '';
+                document.getElementById('setting_gst_rate').value = settings.gst_rate || '';
+                // Google OAuth
+                document.getElementById('setting_google_client_id').value = settings.google_client_id || '';
+                document.getElementById('setting_google_client_secret').value = settings.google_client_secret || '';
+                // Platform
+                document.getElementById('setting_free_credits').value = settings.free_credits || '10';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function saveAdminSettings() {
+        // Sync color picker hex value
+        document.getElementById('setting_brand_color_hex').value = document.getElementById('setting_brand_color').value;
+        
+        const keys = [
+            'free_credits',
+            'brand_name', 'support_email', 'business_address', 'logo_url', 'brand_color',
+            'stripe_secret_key', 'stripe_publishable_key', 'stripe_starter_price', 'stripe_pro_price',
+            'razorpay_key_id', 'razorpay_key_secret', 'razorpay_starter_price', 'razorpay_pro_price',
+            'gstin', 'gst_rate',
+            'google_client_id', 'google_client_secret'
+        ];
+        // special handling for textarea
+        const specialFields = { 'brand_color': () => document.getElementById('setting_brand_color').value };
+        const status = document.getElementById('admin_settings_status');
+        
+        try {
+            for (let key of keys) {
+                const value = document.getElementById(`setting_${key}`).value;
+                await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify({ key, value })
+                });
+            }
+            status.textContent = "Settings saved successfully.";
+            status.className = "status-msg success";
+        } catch (e) {
+            status.textContent = "Failed to save settings.";
+            status.className = "status-msg error";
+        }
+        setTimeout(() => { status.textContent = ''; }, 3000);
+    }
+
+    // Init App
+    checkAuth();
+
+    // Check for Stripe success in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success')) {
+        alert("Payment successful! Your credits have been added.");
+        window.history.replaceState({}, document.title, "/");
+    }
+  </script>
+</body>
+</html>

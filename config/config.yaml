@@ -1,0 +1,40 @@
+# ig_lead_pipeline configuration
+
+pipeline:
+  workers: 4
+  min_delay_seconds: 1.5     # applied only to website scraping requests
+  max_delay_seconds: 4.0
+  max_retries: 3
+  retry_backoff_base: 2.0
+  respect_robots_txt: true
+  request_timeout_seconds: 15
+
+paths:
+  input_default: data/input/sample_input.csv
+  output_dir: data/output
+  db_path: data/output/pipeline.sqlite3
+  screenshots_dir: data/output/screenshots
+  log_dir: logs
+
+instagram:
+  graph_api_base: https://graph.facebook.com
+  fields:
+    - username
+    - name
+    - biography
+    - website
+    - followers_count
+    - follows_count
+    - media_count
+    - profile_picture_url
+    - category_name
+
+website:
+  fetch_contact_page: true
+  contact_page_keywords: ["contact", "contact-us", "contactus", "about", "support"]
+  capture_screenshot: true
+  screenshot_viewport: { width: 1366, height: 900 }
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) LeadEnrichmentBot/1.0 (+contact: you@example.com)"
+
+dashboard:
+  refresh_interval_seconds: 5

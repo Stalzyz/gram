@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    volumes:
+      - ../data:/app/data
+      - ../logs:/app/logs
+    command: uvicorn dashboard.app:app --host 0.0.0.0 --port 8000
+
+  pipeline:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+      - ../data:/app/data
+      - ../logs:/app/logs
+    entrypoint: ["python", "main.py"]
+    command: ["--input", "data/input/sample_input.csv", "--workers", "4"]

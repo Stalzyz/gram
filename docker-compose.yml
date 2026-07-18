@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: lead_pipeline_web
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/lead_pipeline
+      # Add proxies here if you have them:
+      # - WEBSITE_PROXIES=http://proxy1:port,http://proxy2:port
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: lead_pipeline_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lead_pipeline
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:

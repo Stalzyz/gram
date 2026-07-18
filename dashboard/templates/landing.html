@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipeline — Instagram Lead Generation Platform</title>
+  <meta name="description" content="Discover, scrape, and export Instagram leads at scale. Find business emails, bios, and contacts for any niche in minutes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #94a3b8;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --font: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── BACKGROUND PATTERN ─── */
+    .bg-pattern {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image: 
+        radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 32px 32px;
+      opacity: 0.5;
+      mask-image: linear-gradient(to bottom, black 0%, transparent 80%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 80%);
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 3rem;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: padding 0.3s ease;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.75rem;
+      font-size: 1.25rem; font-weight: 700; color: var(--text-primary);
+      text-decoration: none; letter-spacing: -0.5px;
+    }
+    .nav-logo-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--text-primary);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2.5rem; list-style: none; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-cta { display: flex; align-items: center; gap: 1rem; }
+    
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.65rem 1.25rem; border-radius: 10px;
+      font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; transition: all 0.2s ease;
+    }
+    .btn-ghost { color: var(--text-secondary); background: transparent; }
+    .btn-ghost:hover { color: var(--text-primary); background: var(--bg-alt); }
+    
+    .btn-outline {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text-primary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .btn-outline:hover { border-color: var(--border-hover); background: var(--bg-alt); }
+    
+    .btn-primary {
+      background: var(--text-primary); color: white; border: 1px solid transparent;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    }
+    .btn-primary:hover { background: #334155; transform: translateY(-1px); box-shadow: 0 6px 10px -1px rgba(0,0,0,0.15); }
+
+    .content { position: relative; z-index: 1; padding-top: 5rem; }
+
+    /* ─── HERO ─── */
+    .hero {
+      text-align: center; padding: 6rem 2rem 4rem; max-width: 900px; margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: #f1f5f9; border: 1px solid var(--border);
+      color: var(--text-secondary); padding: 0.35rem 1rem; border-radius: 100px;
+      font-size: 0.85rem; font-weight: 500; margin-bottom: 2rem;
+    }
+    .hero-badge span {
+      background: var(--accent); color: white; padding: 0.15rem 0.5rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600;
+    }
+    
+    .hero h1 {
+      font-size: clamp(3rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+    .hero-sub {
+      font-size: 1.25rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.6;
+    }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    
+    /* ─── DASHBOARD PREVIEW ─── */
+    .dashboard-preview {
+      max-width: 1000px; margin: 3rem auto 6rem; padding: 0 2rem;
+    }
+    .preview-window {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .preview-header {
+      background: var(--bg-alt); padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ef4444; } .dot-y { background: #eab308; } .dot-g { background: #22c55e; }
+    
+    .preview-body { padding: 2rem; }
+    
+    /* Simulate a clean table in the preview */
+    .mock-table { width: 100%; border-collapse: collapse; }
+    .mock-table th { text-align: left; padding: 1rem; border-bottom: 1px solid var(--border); color: var(--text-tertiary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .mock-table td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-secondary); }
+    .mock-badge { background: #f1f5f9; color: var(--text-primary); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.75rem; font-weight: 500; }
+    .mock-badge.success { background: #ecfdf5; color: #059669; }
+
+    /* ─── SECTION COMMON ─── */
+    section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .section-tag { font-size: 0.85rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    .section-title { font-size: 2.25rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 1rem; color: var(--text-primary); }
+    .section-sub { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── FEATURES ─── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;
+    }
+    .feature-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 2.5rem; transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .feature-card:hover { border-color: var(--border-hover); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px; margin-bottom: 1.5rem;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-alt); border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .feature-card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .feature-card p { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ─── HOW IT WORKS ─── */
+    .how-steps {
+      display: flex; flex-direction: column; gap: 3rem;
+    }
+    .how-step {
+      display: flex; gap: 2rem; align-items: flex-start;
+      background: var(--bg-card); border: 1px solid var(--border); padding: 2rem; border-radius: 16px;
+    }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: var(--bg-alt); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+    }
+    .step-content h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .step-content p { color: var(--text-secondary); line-height: 1.6; font-size: 1rem; }
+
+    /* ─── PRICING ─── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; max-width: 850px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 3rem 2.5rem; position: relative;
+    }
+    .pricing-card.featured {
+      border: 2px solid var(--text-primary);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+    }
+    .featured-label {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--text-primary); color: white; padding: 0.25rem 1rem;
+      border-radius: 100px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .pricing-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+    .price { font-size: 3rem; font-weight: 700; letter-spacing: -1.5px; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .price span { font-size: 1rem; font-weight: 500; color: var(--text-tertiary); letter-spacing: 0; }
+    .price-desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
+    .price-features li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.95rem; color: var(--text-secondary); }
+    .price-features li::before {
+      content: ''; width: 20px; height: 20px; flex-shrink: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+      background-size: contain; background-repeat: no-repeat; background-position: center;
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      text-align: center; padding: 6rem 2rem; margin: 4rem 2rem;
+      background: var(--bg-alt); border: 1px solid var(--border); border-radius: 24px;
+    }
+    .cta-section h2 { font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 1.5rem; }
+    .cta-section p { color: var(--text-secondary); font-size: 1.15rem; margin-bottom: 2.5rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border); padding: 3rem 2rem;
+      display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto;
+    }
+    footer .logo { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+    footer .links { display: flex; gap: 2rem; }
+    footer .links a { color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; }
+    footer .links a:hover { color: var(--text-primary); }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 4rem 1.5rem; }
+      .how-step { flex-direction: column; gap: 1rem; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-pattern"></div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5" fill="white"/></svg>
+    </div>
+    Pipeline
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="/app" class="btn btn-ghost">Sign In</a>
+    <a href="/app" class="btn btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<div class="content">
+
+  <!-- ─── HERO ─── -->
+  <div class="hero">
+    <div class="hero-badge">
+      <span>New</span>
+      OSINT Discovery Engine 2.0 is live
+    </div>
+    <h1>Automate your Instagram lead generation.</h1>
+    <p class="hero-sub">
+      Pipeline discovers targeted Instagram accounts, extracts contact information, and builds enriched spreadsheets for your sales outreach.
+    </p>
+    <div class="hero-actions">
+      <a href="/app" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">Start for free</a>
+      <a href="#how" class="btn btn-outline" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">See how it works</a>
+    </div>
+  </div>
+
+  <!-- ─── DASHBOARD PREVIEW ─── -->
+  <div class="dashboard-preview">
+    <div class="preview-window">
+      <div class="preview-header">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+      </div>
+      <div class="preview-body">
+        <table class="mock-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Contact Info</th>
+              <th>Metrics</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:var(--text-primary)">@trendsetter_in</strong></td>
+              <td>contact@trendsetter.in<br><span style="font-size:0.8rem;color:var(--text-tertiary)">+91 98765 43210</span></td>
+              <td>142K Followers</td>
+              <td><span class="mock-badge success">Enriched</span></td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text-primary)">@luxe_drapes</strong></td>
+              <td>exports@luxedrapes.in<br><span style="font-size:0.8rem;color:var(--text-tertiary)">luxedrapes.in</span></td>
+              <td>88K Followers</td>
+              <td><span class="mock-badge success">Enriched</span></td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text-primary)">@designerkaur</strong></td>
+              <td>designerkaur@gmail.com</td>
+              <td>45K Followers</td>
+              <td><span class="mock-badge success">Enriched</span></td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--text-primary)">@private_xyz</strong></td>
+              <td>—</td>
+              <td>—</td>
+              <td><span class="mock-badge">Skipped (Private)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── LOGOS / STATS ─── -->
+  <div style="border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-alt); padding: 3rem 2rem;">
+    <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem;">
+      <div style="text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">50K+</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Leads Extracted</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">98%</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Success Rate</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);">CSV/XLSX</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Native Exports</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── FEATURES ─── -->
+  <section id="features">
+    <div class="section-header">
+      <div class="section-tag">Platform</div>
+      <h2 class="section-title">Everything you need to scale outreach.</h2>
+      <p class="section-sub">A complete toolchain for finding, extracting, and organizing B2B contact data from Instagram profiles.</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <h3>OSINT Discovery</h3>
+        <p>Input a niche like "clothing brand" and let our Google dork engine find highly relevant Instagram accounts automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+        </div>
+        <h3>Deep Extraction</h3>
+        <p>Safely extracts emails, phone numbers, external website URLs, and full biography texts directly from profiles.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <h3>Concurrent Processing</h3>
+        <p>Run up to 8 background workers simultaneously to process hundreds of profiles in minutes, not hours.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </div>
+        <h3>Clean Exports</h3>
+        <p>Download your results instantly as beautifully formatted CSV or Excel (XLSX) files, ready for your CRM.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOW IT WORKS ─── -->
+  <section id="how">
+    <div class="section-header" style="max-width: 800px; text-align: left; margin-left: 0;">
+      <h2 class="section-title">Built for speed and simplicity.</h2>
+      <p class="section-sub">No complex setups or proxy configurations required. We handle the heavy lifting while you focus on closing deals.</p>
+    </div>
+    
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Define your target niche</h3>
+          <p>Provide a keyword (e.g., "SaaS founders London") or upload your own list of Instagram usernames. Pipeline automatically validates and discovers targets.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Launch the extraction engine</h3>
+          <p>Hit run and watch the live dashboard as our concurrent workers parse profiles, extract public emails/phones, and structure the data.</p>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Export and start outreach</h3>
+          <p>Download your enriched leads as a CSV or Excel file and import them directly into tools like Apollo, Lemlist, or HubSpot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRICING ─── -->
+  <section id="pricing">
+    <div class="section-header">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title">Pay for what you use.</h2>
+      <p class="section-sub">Simple credit-based billing. No monthly subscriptions or hidden fees. Buy credits once, keep them forever.</p>
+    </div>
+    
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Starter Pack</h3>
+        <div class="price">$10 <span>/ one-time</span></div>
+        <p class="price-desc">Perfect for testing a niche or running a small outreach campaign.</p>
+        <ul class="price-features">
+          <li>1,000 lead credits</li>
+          <li>Email & phone extraction</li>
+          <li>CSV & Excel exports</li>
+          <li>4 concurrent workers</li>
+        </ul>
+        <a href="/app" class="btn btn-outline" style="width: 100%; justify-content: center; margin-top: 1rem;">Get Started</a>
+      </div>
+      
+      <div class="pricing-card featured">
+        <div class="featured-label">Most Popular</div>
+        <h3>Pro Pack</h3>
+        <div class="price">$40 <span>/ one-time</span></div>
+        <p class="price-desc">Built for serious agencies and high-volume sales teams.</p>
+        <ul class="price-features">
+          <li>5,000 lead credits</li>
+          <li>Email & phone extraction</li>
+          <li>CSV & Excel exports</li>
+          <li>8 concurrent workers</li>
+          <li>Priority queue access</li>
+        </ul>
+        <a href="/app" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Get Pro Pack</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <div class="cta-section">
+    <h2>Stop manually searching for leads.</h2>
+    <p>Join modern sales teams automating their pipeline with enriched Instagram data.</p>
+    <a href="/app" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1.05rem;">Get started for free</a>
+    <p style="font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0; color: var(--text-tertiary);">Includes 10 free credits to test the platform. No credit card required.</p>
+  </div>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <div class="logo">Pipeline SaaS © 2026</div>
+    <div class="links">
+      <a href="/app">Dashboard</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
