@@ -58,6 +58,14 @@ def get_pricing_config():
         "pro_credits":            store.get_setting("pro_credits",            "5,000"),
     }
 
+@app.get("/api/config/brand")
+def get_brand_config():
+    return {
+        "brand_name": store.get_setting("brand_name", ""),
+        "brand_color": store.get_setting("brand_color", ""),
+        "logo_url": store.get_setting("logo_url", "")
+    }
+
 
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):
