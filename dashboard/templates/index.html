@@ -475,6 +475,15 @@
 
           <hr style="border:none;border-top:1px solid var(--border-color);margin:1.5rem 0;" />
 
+          <h2 style="font-size:0.95rem;margin-bottom:0.25rem;">Scraping Engine</h2>
+          <p class="panel-desc">Bypass IP blocks during discovery and scraping.</p>
+          <div style="margin-top:1rem;">
+            <label class="setting-label">Scraping Proxies (comma separated)</label>
+            <textarea id="setting_scraping_proxies" class="input-field" placeholder="http://user:pass@12.34.56.78:8080" style="resize:vertical;min-height:60px;"></textarea>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border-color);margin:1.5rem 0;" />
+
           <h2 style="font-size:0.95rem;margin-bottom:0.25rem;">Onboarding</h2>
           <p class="panel-desc">Credits gifted to new users on signup.</p>
           <div style="margin-top:1rem;">
@@ -1175,6 +1184,8 @@
                 document.getElementById('setting_meta_ig_user_id').value = settings.meta_ig_user_id || '';
                 // Platform
                 document.getElementById('setting_free_credits').value = settings.free_credits || '10';
+                // Scraping Proxies
+                document.getElementById('setting_scraping_proxies').value = settings.scraping_proxies || '';
             }
         } catch (e) {
             console.error(e);
@@ -1192,7 +1203,8 @@
             'razorpay_key_id', 'razorpay_key_secret', 'razorpay_starter_price', 'razorpay_pro_price',
             'gstin', 'gst_rate',
             'google_client_id', 'google_client_secret',
-            'meta_access_token', 'meta_ig_user_id'
+            'meta_access_token', 'meta_ig_user_id',
+            'scraping_proxies'
         ];
         // special handling for textarea
         const specialFields = { 'brand_color': () => document.getElementById('setting_brand_color').value };
