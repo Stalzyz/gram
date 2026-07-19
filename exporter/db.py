@@ -311,7 +311,7 @@ class ResultStore:
                 """)
                 return [{
                     "id": r[0], "email": r[1], "credits": r[2],
-                    "created_at": r[3].isoformat() if r[3] else None,
+                    "created_at": (r[3] if isinstance(r[3], str) else r[3].isoformat()) if r[3] else None,
                     "total_spent_usd": r[4] / 100.0
                 } for r in cur.fetchall()]
         finally:
