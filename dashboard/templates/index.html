@@ -659,7 +659,10 @@
         const data = await res.json();
         document.getElementById('user_credits').textContent = data.credits;
         if (data.is_admin) {
+            window.isAdmin = true;
             document.getElementById('admin_nav_btn').style.display = 'inline-block';
+            const limitInput = document.getElementById('discover_limit');
+            if(limitInput) limitInput.dispatchEvent(new Event('input'));
         }
       } catch (e) {}
     }
@@ -1031,7 +1034,8 @@
             status.className = 'status-msg error';
         } finally {
             btn.disabled = false;
-            btnText.textContent = 'Discover & Scrape (-50 Credits)';
+            const limitInput = document.getElementById('discover_limit');
+            if (limitInput) limitInput.dispatchEvent(new Event('input'));
             setTimeout(() => { if(status.className.includes('success')) status.textContent = ''; }, 5000);
         }
     }
@@ -1253,8 +1257,14 @@
         limitInput.addEventListener('input', (e) => {
             const val = parseInt(e.target.value) || 0;
             const cost = Math.ceil(val / 10);
-            btnText.textContent = `Discover & Scrape (-${cost} Credits)`;
+            if (window.isAdmin) {
+                btnText.textContent = `Discover & Scrape (Free)`;
+            } else {
+                btnText.textContent = `Discover & Scrape (-${cost} Credits)`;
+            }
         });
+        // Set initial state
+        limitInput.dispatchEvent(new Event('input'));
     }
 
     // Init Google auth button (will silently no-op if client_id not set in admin)
