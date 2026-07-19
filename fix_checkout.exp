@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+spawn ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@200.97.163.236 "cd /var/www/gram.git && echo '#!/bin/bash' > hooks/post-receive && echo 'git --work-tree=/var/www/gram --git-dir=/var/www/gram.git checkout -f main' >> hooks/post-receive && chmod +x hooks/post-receive && git --work-tree=/var/www/gram --git-dir=/var/www/gram.git checkout -f main"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

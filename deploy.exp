@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+# 1. SSH and setup bare repo
+spawn ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@200.97.163.236 "mkdir -p /var/www/gram.git /var/www/gram && cd /var/www/gram.git && git init --bare && echo '#!/bin/bash' > hooks/post-receive && echo 'git --work-tree=/var/www/gram --git-dir=/var/www/gram.git checkout -f' >> hooks/post-receive && chmod +x hooks/post-receive"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}
+
+# 2. Add git remote and push
+spawn bash -c "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no' git remote add production root@200.97.163.236:/var/www/gram.git || true"
+expect eof
+
+spawn bash -c "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no' git push production main"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

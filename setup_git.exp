@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no root@200.97.163.236 "mkdir -p /root/gram.git /root/gram && cd /root/gram.git && git init --bare && cat << 'HOOK' > hooks/post-receive
+#!/bin/bash
+git --work-tree=/root/gram --git-dir=/root/gram.git checkout -f
+HOOK
+chmod +x hooks/post-receive"
+expect "password:"
+send "Photoshop09@\r"
+expect eof

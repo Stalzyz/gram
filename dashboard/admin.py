@@ -33,6 +33,8 @@ def get_settings(admin=Depends(get_admin_user)):
         "google_client_id", "google_client_secret",
         # Scraping System Settings
         "scraping_workers", "scraping_min_delay", "scraping_max_delay", "scraping_max_retries", "scraping_proxies",
+        # Meta API Keys
+        "meta_access_token", "meta_ig_user_id"
     ]
     return {key: store.get_setting(key, "") for key in keys}
 

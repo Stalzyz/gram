@@ -64,7 +64,7 @@ class LeadPipeline:
     def __init__(self, config: dict):
         self.config = config
         self.store = ResultStore(config["paths"]["db_path"])
-        self.ig_client = InstagramBusinessClient(config)
+        self.ig_client = InstagramBusinessClient(config, store=self.store)
         self.website_scraper = WebsiteScraper(config)
         self.stats = PipelineStats()
         self.screenshots_dir = config["paths"]["screenshots_dir"]

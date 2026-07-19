@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+spawn ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@200.97.163.236 "cd /var/www/gram && docker compose -f docker-compose.prod.yml up -d --build"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+spawn bash -c "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no' git push production main"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}
+
+spawn ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@200.97.163.236 "cd /var/www/gram && docker rm -f lead_pipeline_nginx || true && docker compose -f docker-compose.prod.yml up -d --build && cp nginx.conf /etc/nginx/sites-available/gram.grafty.pro && ln -sf /etc/nginx/sites-available/gram.grafty.pro /etc/nginx/sites-enabled/ && nginx -t && systemctl restart nginx"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

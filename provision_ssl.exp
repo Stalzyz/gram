@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@200.97.163.236 "certbot --nginx -d gram.grafty.pro --non-interactive --agree-tos -m admin@grafty.pro"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

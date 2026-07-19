@@ -460,6 +460,15 @@
           </div>
 
           <hr style="border:none;border-top:1px solid var(--border-color);margin:1.5rem 0;" />
+          
+          <h2 style="font-size:0.95rem;margin-bottom:0.25rem;">Meta Graph API</h2>
+          <p class="panel-desc">Required for fetching Instagram bios and followers.</p>
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
+            <div><label class="setting-label">Access Token</label><input type="password" id="setting_meta_access_token" class="input-field" placeholder="EAA..." /></div>
+            <div><label class="setting-label">Instagram User ID</label><input type="text" id="setting_meta_ig_user_id" class="input-field" placeholder="178414..." /></div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border-color);margin:1.5rem 0;" />
 
           <h2 style="font-size:0.95rem;margin-bottom:0.25rem;">Onboarding</h2>
           <p class="panel-desc">Credits gifted to new users on signup.</p>
@@ -1145,6 +1154,9 @@
                 // Google OAuth
                 document.getElementById('setting_google_client_id').value = settings.google_client_id || '';
                 document.getElementById('setting_google_client_secret').value = settings.google_client_secret || '';
+                // Meta API
+                document.getElementById('setting_meta_access_token').value = settings.meta_access_token || '';
+                document.getElementById('setting_meta_ig_user_id').value = settings.meta_ig_user_id || '';
                 // Platform
                 document.getElementById('setting_free_credits').value = settings.free_credits || '10';
             }
@@ -1163,7 +1175,8 @@
             'stripe_secret_key', 'stripe_publishable_key', 'stripe_starter_price', 'stripe_pro_price',
             'razorpay_key_id', 'razorpay_key_secret', 'razorpay_starter_price', 'razorpay_pro_price',
             'gstin', 'gst_rate',
-            'google_client_id', 'google_client_secret'
+            'google_client_id', 'google_client_secret',
+            'meta_access_token', 'meta_ig_user_id'
         ];
         // special handling for textarea
         const specialFields = { 'brand_color': () => document.getElementById('setting_brand_color').value };

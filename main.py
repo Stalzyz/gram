@@ -43,7 +43,8 @@ def main():
     workers = args.workers or config["pipeline"]["workers"]
 
     try:
-        pipeline.run(input_csv=input_csv, workers=workers, resume=args.resume)
+        # CLI execution runs as system/admin user (user_id=1)
+        pipeline.run(user_id=1, input_csv=input_csv, workers=workers, resume=args.resume)
     except KeyboardInterrupt:
         logger.warning("Interrupted by user - progress up to the last completed profile is saved. "
                         "Re-run with --resume to continue.")

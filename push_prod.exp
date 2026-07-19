@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+spawn bash -c "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no' git push production main"
+expect {
+    "password:" {
+        send "Photoshop09@\r"
+        exp_continue
+    }
+    eof
+}

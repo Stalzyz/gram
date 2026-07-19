@@ -26,9 +26,13 @@ class RateLimitedError(InstagramAPIError):
 
 
 class InstagramBusinessClient:
-    def __init__(self, config: dict):
-        self.access_token = os.getenv("META_ACCESS_TOKEN")
-        self.ig_user_id = os.getenv("META_IG_USER_ID")
+    def __init__(self, config: dict, store=None):
+        # Try fetching from DB first, then fallback to ENV
+        db_token = store.get_setting("meta_access_token", "") if store else ""
+        db_user_id = store.get_setting("meta_ig_user_id", "") if store else ""
+        
+        self.access_token = db_token or os.getenv("META_ACCESS_TOKEN")
+        self.ig_user_id = db_user_id or os.getenv("META_IG_USER_ID")
         self.api_version = os.getenv(
             "META_GRAPH_API_VERSION", config["instagram"].get("graph_api_version", "v19.0")
         )
@@ -38,7 +42,7 @@ class InstagramBusinessClient:
         if not self.access_token or not self.ig_user_id:
             logger.warning(
                 "META_ACCESS_TOKEN / META_IG_USER_ID not set - Instagram lookups will fail. "
-                "See .env.example."
+                "Configure them in the Admin Panel or .env."
             )
 
     @with_retries(max_attempts=3, base_seconds=2.0, exceptions=(RateLimitedError,))
