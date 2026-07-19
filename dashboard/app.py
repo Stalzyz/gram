@@ -189,12 +189,19 @@ import csv
 class DiscoverRequest(BaseModel):
     keyword: str
     limit: int = 50
+    location: str = None
+    platform: str = None
 
 @app.post("/api/discover")
 def api_discover(req: DiscoverRequest):
     from scraper.discovery_dorks import DorkScraper
     scraper = DorkScraper()
-    usernames = scraper.discover_leads(keyword=req.keyword, limit=req.limit)
+    
+    final_keyword = req.keyword
+    if req.location:
+        final_keyword = f"{req.keyword} {req.location}"
+        
+    usernames = scraper.discover_leads(keyword=final_keyword, platform=req.platform, limit=req.limit)
     
     if not usernames:
         return JSONResponse({"status": "error", "message": "No usernames found. Query might be too niche or blocked."}, status_code=400)

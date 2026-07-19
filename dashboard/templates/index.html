@@ -954,13 +954,21 @@
         status.className = 'status-msg info';
 
         try {
+            const location = document.getElementById('pref_location_keywords')?.value || null;
+            const isShopify = document.getElementById('pref_require_shopify')?.checked;
+            const isWooCommerce = document.getElementById('pref_require_woocommerce')?.checked;
+            
+            let platform = null;
+            if (isShopify) platform = "myshopify.com";
+            else if (isWooCommerce) platform = "woocommerce";
+
             const res = await fetch('/api/discover', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     ...getAuthHeaders()
                 },
-                body: JSON.stringify({ keyword, limit })
+                body: JSON.stringify({ keyword, limit, location, platform })
             });
             
             if (res.status === 401) {
