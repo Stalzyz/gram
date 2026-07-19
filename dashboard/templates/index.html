@@ -643,29 +643,32 @@
           method: 'POST',
           headers: getAuthHeaders()
         });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.detail || "Failed to create Razorpay order.");
+          return;
+        }
         const orderData = await res.json();
-        
+
+        const brand = 'Pipeline SaaS';
         const options = {
-            "key": "rzp_test_123", // Replace with real key from env if needed
+            "key": orderData.key_id,         // ← real key from admin settings
             "amount": orderData.amount,
             "currency": "INR",
-            "name": "Pipeline SaaS",
+            "name": brand,
             "description": `Purchase ${packageType} credits`,
             "order_id": orderData.order_id,
             "handler": async function (response) {
-                // Verify payment
                 const verifyRes = await fetch('/api/billing/razorpay/verify', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...getAuthHeaders()
-                    },
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                     body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_order_id:  response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
-                        user_id: 1, // backend should resolve this securely, using a simple payload here
-                        credits: packageType === 'starter' ? 1000 : 5000
+                        razorpay_signature:  response.razorpay_signature,
+                        user_id: getUserIdFromToken(), // ← resolved from JWT
+                        credits: orderData.credits,   // ← from server, not hardcoded
+                        amount:  orderData.amount,
                     })
                 });
                 if (verifyRes.ok) {
@@ -673,16 +676,28 @@
                     hideCheckout();
                     fetchUser();
                 } else {
-                    alert("Payment verification failed.");
+                    const err = await verifyRes.json();
+                    alert(err.detail || "Payment verification failed.");
                 }
             },
-            "theme": { "color": "#2563eb" }
+            "prefill": {},
+            "theme": { "color": "#3b82f6" }
         };
         const rzp1 = new Razorpay(options);
         rzp1.open();
       } catch (e) {
-        alert("Razorpay checkout failed");
+        console.error(e);
+        alert("Razorpay checkout failed: " + e.message);
       }
+    }
+
+    function getUserIdFromToken() {
+      try {
+        const token = getToken();
+        if (!token) return null;
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub;
+      } catch { return null; }
     }
 
 
