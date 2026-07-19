@@ -230,7 +230,12 @@ class DiscoverRequest(BaseModel):
 @app.post("/api/discover")
 def api_discover(req: DiscoverRequest):
     from scraper.discovery_dorks import DorkScraper
-    scraper = DorkScraper()
+    
+    # Fetch proxies from DB if available
+    proxy_str = pipeline.store.get_setting("scraping_proxies", "")
+    proxy_list = [p.strip() for p in proxy_str.split(",") if p.strip()] if proxy_str else None
+    
+    scraper = DorkScraper(proxies=proxy_list)
     
     final_keyword = req.keyword
     if req.location:

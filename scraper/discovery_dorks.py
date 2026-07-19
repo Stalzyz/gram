@@ -9,9 +9,9 @@ from utils.proxy_manager import ProxyManager
 logger = get_logger()
 
 class DorkScraper:
-    def __init__(self):
+    def __init__(self, proxies=None):
         self.session = requests.Session()
-        self.proxy_manager = ProxyManager()
+        self.proxy_manager = ProxyManager(proxies=proxies)
         # A list of common user agents to rotate
         self.user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
