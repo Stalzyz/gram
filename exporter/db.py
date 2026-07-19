@@ -466,7 +466,7 @@ class ResultStore:
                 cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status='failed'", (user_id, campaign))
                 row = cur.fetchone(); failed = row[0] if row else 0
 
-                cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status LIKE 'skipped%'", (user_id, campaign))
+                cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status LIKE 'skipped%%'", (user_id, campaign))
                 row = cur.fetchone(); skipped = row[0] if row else 0
 
                 pending = max(0, total - success - failed - skipped)
