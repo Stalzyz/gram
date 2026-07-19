@@ -149,7 +149,7 @@
         <input type="number" id="discover_limit" placeholder="Limit" value="20" class="input-field num-input" />
         <button id="discover_btn" class="btn btn-primary" onclick="startDiscovery()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span id="discover_btn_text">Discover & Scrape (-20 Credits)</span>
+          <span id="discover_btn_text">Discover & Scrape (-2 Credits)</span>
         </button>
       </div>
 
@@ -940,8 +940,9 @@
         }
 
         const currentCredits = parseInt(document.getElementById('user_credits').textContent);
-        if (!isNaN(currentCredits) && currentCredits < limit) {
-            status.textContent = `Insufficient credits to start scraping (costs up to ${limit}).`;
+        const expectedCost = Math.ceil(limit / 10);
+        if (!isNaN(currentCredits) && currentCredits < expectedCost) {
+            status.textContent = `Insufficient credits to start scraping (costs up to ${expectedCost}).`;
             status.className = 'status-msg error';
             showCheckout();
             return;
@@ -989,7 +990,8 @@
                 status.textContent = `Found ${data.count} leads. Scraper is already running!`;
                 status.className = 'status-msg warning';
             } else if (runRes.ok) {
-                status.textContent = `Success! Now scraping ${data.count} leads in the background (-${data.count} Credits).`;
+                const actualCost = Math.ceil(data.count / 10);
+                status.textContent = `Success! Now scraping ${data.count} leads in the background (-${actualCost} Credits).`;
                 status.className = 'status-msg success';
                 fetchUser();
             } else {
@@ -1217,7 +1219,8 @@
     if (limitInput && btnText) {
         limitInput.addEventListener('input', (e) => {
             const val = parseInt(e.target.value) || 0;
-            btnText.textContent = `Discover & Scrape (-${val} Credits)`;
+            const cost = Math.ceil(val / 10);
+            btnText.textContent = `Discover & Scrape (-${cost} Credits)`;
         });
     }
 

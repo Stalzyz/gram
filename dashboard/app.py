@@ -132,12 +132,13 @@ def api_run(input_csv: str, workers: int = None, resume: bool = True, campaign: 
     """Kick off a pipeline run in the background (non-blocking for the dashboard)."""
     global _run_thread
 
-    # Calculate exact cost based on the number of leads in the CSV (1 credit per lead)
+    # Calculate exact cost based on the number of leads in the CSV (1 credit per 10 leads)
     # Subtract 1 for the header row
     try:
         with open(input_csv, 'r', encoding='utf-8') as f:
             lines = sum(1 for line in f)
-        cost = max(0, lines - 1)
+        lead_count = max(0, lines - 1)
+        cost = (lead_count + 9) // 10  # Ceiling division by 10
     except FileNotFoundError:
         cost = 0
 
