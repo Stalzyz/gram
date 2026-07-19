@@ -255,7 +255,7 @@
     <div class="nav-logo-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1.5" fill="white"/></svg>
     </div>
-    Pipeline
+    {{ s.brand_name }}
   </a>
   <ul class="nav-links">
     <li><a href="#features">Features</a></li>
@@ -436,10 +436,10 @@
     <div class="pricing-grid">
       <div class="pricing-card">
         <h3>Starter Pack</h3>
-        <div class="price">$10 <span>/ one-time</span></div>
+        <div class="price">{{ s.display_currency }}{{ s.display_starter }} <span>/ one-time</span></div>
         <p class="price-desc">Perfect for testing a niche or running a small outreach campaign.</p>
         <ul class="price-features">
-          <li>1,000 lead credits</li>
+          <li>{{ s.starter_credits }} lead credits</li>
           <li>Email & phone extraction</li>
           <li>CSV & Excel exports</li>
           <li>4 concurrent workers</li>
@@ -450,10 +450,10 @@
       <div class="pricing-card featured">
         <div class="featured-label">Most Popular</div>
         <h3>Pro Pack</h3>
-        <div class="price">$40 <span>/ one-time</span></div>
+        <div class="price">{{ s.display_currency }}{{ s.display_pro }} <span>/ one-time</span></div>
         <p class="price-desc">Built for serious agencies and high-volume sales teams.</p>
         <ul class="price-features">
-          <li>5,000 lead credits</li>
+          <li>{{ s.pro_credits }} lead credits</li>
           <li>Email & phone extraction</li>
           <li>CSV & Excel exports</li>
           <li>8 concurrent workers</li>
@@ -469,18 +469,17 @@
     <h2>Stop manually searching for leads.</h2>
     <p>Join modern sales teams automating their pipeline with enriched Instagram data.</p>
     <a href="/app" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1.05rem;">Get started for free</a>
-    <p style="font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0; color: var(--text-tertiary);">Includes 10 free credits to test the platform. No credit card required.</p>
+    <p style="font-size: 0.95rem; margin-top: 1rem; margin-bottom: 0; color: #10b981; font-weight: 600; padding: 0.5rem 1rem; background: rgba(16, 185, 129, 0.1); display: inline-block; border-radius: 20px;">✨ Includes {{ s.free_credits }} free credits to test the platform!</p>
   </div>
 
   <!-- ─── FOOTER ─── -->
   <footer>
-    <div class="logo">Pipeline SaaS © 2026</div>
+    <div class="logo">{{ s.brand_name }} © 2026</div>
     <div class="links">
       <a href="/app">Dashboard</a>
       <a href="#features">Features</a>
+      <a href="/terms">Terms & Conditions</a>
       <a href="#pricing">Pricing</a>
-      <a href="#">Terms</a>
-      <a href="#">Privacy</a>
     </div>
   </footer>
 

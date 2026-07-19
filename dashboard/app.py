@@ -69,8 +69,40 @@ def get_brand_config():
 
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):
-    return templates.TemplateResponse("landing.html", {"request": request})
+    settings = {
+        "stripe_starter_price":   store.get_setting("stripe_starter_price",   "1000"),
+        "stripe_pro_price":       store.get_setting("stripe_pro_price",       "4000"),
+        "razorpay_starter_price": store.get_setting("razorpay_starter_price", "80000"),
+        "razorpay_pro_price":     store.get_setting("razorpay_pro_price",     "320000"),
+        "starter_credits":        store.get_setting("starter_credits",        "1,000"),
+        "pro_credits":            store.get_setting("pro_credits",            "5,000"),
+        "free_credits":           store.get_setting("free_credits",           "10"),
+        "brand_name":             store.get_setting("brand_name",             "Pipeline"),
+        "brand_color":            store.get_setting("brand_color",            "#2563eb"),
+        "logo_url":               store.get_setting("logo_url",               ""),
+    }
+    
+    # Try using USD first, then INR if stripe is missing. 
+    # If neither is set, fallback to default stripe prices.
+    stripe_key = store.get_setting("stripe_secret_key", "")
+    rzp_key = store.get_setting("razorpay_key_id", "")
+    
+    if stripe_key or not rzp_key:
+        settings["display_currency"] = "$"
+        settings["display_starter"] = f"{int(settings['stripe_starter_price']) // 100}"
+        settings["display_pro"] = f"{int(settings['stripe_pro_price']) // 100}"
+    else:
+        settings["display_currency"] = "₹"
+        settings["display_starter"] = f"{int(settings['razorpay_starter_price']) // 100}"
+        settings["display_pro"] = f"{int(settings['razorpay_pro_price']) // 100}"
+        
+    return templates.TemplateResponse("landing.html", {"request": request, "s": settings})
 
+
+@app.get("/terms", response_class=HTMLResponse)
+def terms(request: Request):
+    from datetime import datetime
+    return templates.TemplateResponse("terms.html", {"request": request, "date": datetime.now().strftime("%B %d, %Y")})
 
 @app.get("/app", response_class=HTMLResponse)
 def index(request: Request):
