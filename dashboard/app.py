@@ -174,7 +174,10 @@ def api_run(input_csv: str, workers: int = None, resume: bool = True, campaign: 
     except FileNotFoundError:
         cost = 0
 
-    if not pipeline.store.deduct_credits(user_id, cost):
+    user = pipeline.store.get_user_by_id(user_id)
+    is_admin = user and user.get("is_admin")
+
+    if not is_admin and not pipeline.store.deduct_credits(user_id, cost):
         return JSONResponse({"status": "insufficient_credits", "required": cost}, status_code=402)
 
     with _run_lock:
