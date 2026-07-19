@@ -17,8 +17,9 @@
   <header class="glass-header">
     <div class="header-content">
       <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="glow-icon"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
-        <h1>Pipeline Dashboard</h1>
+        <img id="brand_logo" src="" alt="" style="max-height:30px;display:none;object-fit:contain;" />
+        <svg id="brand_default_icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="glow-icon"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+        <h1 id="brand_name">Pipeline Dashboard</h1>
       </div>
       <div class="header-right" id="header_right" style="display: none; align-items: center; gap: 1rem;">
         <div class="credits-badge">
@@ -938,6 +939,14 @@
             return;
         }
 
+        const currentCredits = parseInt(document.getElementById('user_credits').textContent);
+        if (!isNaN(currentCredits) && currentCredits < 50) {
+            status.textContent = 'Insufficient credits to start scraping (costs 50).';
+            status.className = 'status-msg error';
+            showCheckout();
+            return;
+        }
+
         btn.disabled = true;
         btnText.textContent = 'Discovering...';
         status.textContent = 'Searching the web for leads... this may take a moment.';
@@ -1167,8 +1176,39 @@
         setTimeout(() => { status.textContent = ''; }, 3000);
     }
 
+    // --- BRAND ---
+    async function loadBrand() {
+      try {
+        const res = await fetch('/api/config/brand');
+        if (!res.ok) return;
+        const b = await res.json();
+
+        // Brand name
+        if (b.brand_name) {
+          document.getElementById('brand_name').textContent = b.brand_name;
+          document.title = b.brand_name;
+        }
+
+        // Brand color
+        if (b.brand_color) {
+          document.documentElement.style.setProperty('--accent', b.brand_color);
+          document.documentElement.style.setProperty('--btn-primary-bg', b.brand_color);
+        }
+
+        // Logo — show custom image, hide default SVG icon
+        if (b.logo_url) {
+          const img = document.getElementById('brand_logo');
+          const icon = document.getElementById('brand_default_icon');
+          img.src = b.logo_url;
+          img.style.display = 'block';
+          icon.style.display = 'none';
+        }
+      } catch (e) { /* keep defaults */ }
+    }
+
     // Init App
     checkAuth();
+    loadBrand();
     // Init Google auth button (will silently no-op if client_id not set in admin)
     window.addEventListener('load', () => {
       // Wait a tick for the GSI script to be ready
