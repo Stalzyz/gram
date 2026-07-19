@@ -219,7 +219,7 @@ class ResultStore:
                               COUNT(*) as total,
                               SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as success,
                               SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-                              SUM(CASE WHEN status LIKE 'skipped%' THEN 1 ELSE 0 END) as skipped,
+                              SUM(CASE WHEN status LIKE 'skipped%%' THEN 1 ELSE 0 END) as skipped,
                               MAX(updated_at) as last_updated
                        FROM profiles 
                        WHERE user_id = %s 
