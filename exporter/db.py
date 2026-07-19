@@ -458,22 +458,22 @@ class ResultStore:
         try:
             with conn.cursor() as cur:
                 cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s", (user_id, campaign))
-                total = cur.fetchone()[0]
-                
+                row = cur.fetchone(); total = row[0] if row else 0
+
                 cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status='success'", (user_id, campaign))
-                success = cur.fetchone()[0]
-                
+                row = cur.fetchone(); success = row[0] if row else 0
+
                 cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status='failed'", (user_id, campaign))
-                failed = cur.fetchone()[0]
+                row = cur.fetchone(); failed = row[0] if row else 0
 
                 cur.execute("SELECT COUNT(*) FROM profiles WHERE user_id=%s AND campaign=%s AND status LIKE 'skipped%'", (user_id, campaign))
-                skipped = cur.fetchone()[0]
-                
-                pending = total - success - failed - skipped
-                
+                row = cur.fetchone(); skipped = row[0] if row else 0
+
+                pending = max(0, total - success - failed - skipped)
+
                 cur.execute("SELECT username, error FROM profiles WHERE user_id=%s AND campaign=%s AND status='failed'", (user_id, campaign))
                 failed_list = [{"username": u, "error": e} for u, e in cur.fetchall()]
-                
+
             return {
                 "total": total,
                 "success": success,
