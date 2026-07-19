@@ -44,7 +44,12 @@ def get_auth_config():
 
 @app.get("/api/config/pricing")
 def get_pricing_config():
+    stripe_key    = store.get_setting("stripe_secret_key",     "") or ""
+    rzp_key_id    = store.get_setting("razorpay_key_id",       "") or ""
+    rzp_key_sec   = store.get_setting("razorpay_key_secret",   "") or ""
     return {
+        "stripe_active":          bool(stripe_key),
+        "razorpay_active":        bool(rzp_key_id and rzp_key_sec),
         "stripe_starter_price":   store.get_setting("stripe_starter_price",   "1000"),
         "stripe_pro_price":       store.get_setting("stripe_pro_price",       "4000"),
         "razorpay_starter_price": store.get_setting("razorpay_starter_price", "80000"),

@@ -68,26 +68,72 @@
     <div class="panel checkout-panel">
       <h2>Buy Credits</h2>
       <p class="panel-desc">Top up your account to generate more leads.</p>
-      
+
       <div class="pricing-cards">
+
+        <!-- STARTER CARD -->
         <div class="pricing-card">
           <h3>Starter</h3>
-          <p class="price"><span id="starter_price_label">$10</span> <span id="starter_credits_label">for 1,000 leads</span></p>
-          <div class="button-group">
-            <button onclick="buyStripe('starter')" class="btn btn-primary btn-full">Pay with Card</button>
-            <button onclick="buyRazorpay('starter')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;" id="starter_credits_label">1,000 leads</p>
+
+          <!-- Stripe row -->
+          <div id="starter_stripe_row" style="display:none; background:rgba(37,99,235,0.05); border:1px solid rgba(37,99,235,0.15); border-radius:10px; padding:0.85rem 1rem; margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:1.4rem; font-weight:700;" id="starter_usd_label">$10</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">USD · Card / Wallet</div>
+              </div>
+              <button onclick="buyStripe('starter')" class="btn btn-primary" style="padding:0.5rem 1.1rem;font-size:0.9rem;">Pay</button>
+            </div>
+          </div>
+
+          <!-- Razorpay row -->
+          <div id="starter_rzp_row" style="display:none; background:rgba(5,150,105,0.05); border:1px solid rgba(5,150,105,0.15); border-radius:10px; padding:0.85rem 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:1.4rem; font-weight:700;" id="starter_inr_label">₹800</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">INR · UPI / Netbanking</div>
+              </div>
+              <button onclick="buyRazorpay('starter')" class="btn" style="padding:0.5rem 1.1rem;font-size:0.9rem;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border:none;">Pay</button>
+            </div>
           </div>
         </div>
+
+        <!-- PRO CARD -->
         <div class="pricing-card highlighted">
           <h3>Pro</h3>
-          <p class="price"><span id="pro_price_label">$40</span> <span id="pro_credits_label">for 5,000 leads</span></p>
-          <div class="button-group">
-            <button onclick="buyStripe('pro')" class="btn btn-primary btn-full">Pay with Card</button>
-            <button onclick="buyRazorpay('pro')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;" id="pro_credits_label">5,000 leads</p>
+
+          <!-- Stripe row -->
+          <div id="pro_stripe_row" style="display:none; background:rgba(37,99,235,0.05); border:1px solid rgba(37,99,235,0.15); border-radius:10px; padding:0.85rem 1rem; margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:1.4rem; font-weight:700;" id="pro_usd_label">$40</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">USD · Card / Wallet</div>
+              </div>
+              <button onclick="buyStripe('pro')" class="btn btn-primary" style="padding:0.5rem 1.1rem;font-size:0.9rem;">Pay</button>
+            </div>
+          </div>
+
+          <!-- Razorpay row -->
+          <div id="pro_rzp_row" style="display:none; background:rgba(5,150,105,0.05); border:1px solid rgba(5,150,105,0.15); border-radius:10px; padding:0.85rem 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:1.4rem; font-weight:700;" id="pro_inr_label">₹3,200</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">INR · UPI / Netbanking</div>
+              </div>
+              <button onclick="buyRazorpay('pro')" class="btn" style="padding:0.5rem 1.1rem;font-size:0.9rem;background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border:none;">Pay</button>
+            </div>
           </div>
         </div>
+
       </div>
-      <button onclick="hideCheckout()" class="btn btn-secondary" style="margin-top: 1.5rem;">Cancel</button>
+
+      <div id="checkout_no_gateways" style="display:none; text-align:center; padding:1.5rem; color:var(--text-secondary);">
+        ⚙️ No payment gateway configured yet. Ask the admin to add Stripe or Razorpay keys.
+      </div>
+
+      <button onclick="hideCheckout()" class="btn btn-secondary" style="margin-top: 1.5rem; width:100%;">Cancel</button>
     </div>
   </div>
 
@@ -601,21 +647,39 @@
       document.getElementById('checkout_modal').style.display = 'flex';
       try {
         const res = await fetch('/api/config/pricing');
-        if (res.ok) {
-          const p = await res.json();
-          // Stripe prices are stored in cents, Razorpay in paise
-          const starterUSD = p.stripe_starter_price ? (parseInt(p.stripe_starter_price) / 100).toFixed(0) : '10';
-          const proUSD = p.stripe_pro_price ? (parseInt(p.stripe_pro_price) / 100).toFixed(0) : '40';
-          const starterINR = p.razorpay_starter_price ? (parseInt(p.razorpay_starter_price) / 100).toFixed(0) : '800';
-          const proINR = p.razorpay_pro_price ? (parseInt(p.razorpay_pro_price) / 100).toFixed(0) : '3200';
-          const starterCredits = p.starter_credits || '1,000';
-          const proCredits = p.pro_credits || '5,000';
+        if (!res.ok) return;
+        const p = await res.json();
 
-          document.getElementById('starter_price_label').textContent = `$${starterUSD}`;
-          document.getElementById('pro_price_label').textContent = `$${proUSD}`;
-          document.getElementById('starter_credits_label').textContent = `for ${starterCredits} leads`;
-          document.getElementById('pro_credits_label').textContent = `for ${proCredits} leads`;
-        }
+        const stripeOn  = p.stripe_active;
+        const razorOn   = p.razorpay_active;
+        const anyActive = stripeOn || razorOn;
+
+        // Credits labels
+        const sc = p.starter_credits || '1,000';
+        const pc = p.pro_credits     || '5,000';
+        document.getElementById('starter_credits_label').textContent = sc + ' leads';
+        document.getElementById('pro_credits_label').textContent     = pc + ' leads';
+
+        // USD prices (Stripe — cents → dollars)
+        const sUSD = p.stripe_starter_price ? '$' + (parseInt(p.stripe_starter_price) / 100).toFixed(0) : '$10';
+        const pUSD = p.stripe_pro_price     ? '$' + (parseInt(p.stripe_pro_price)     / 100).toFixed(0) : '$40';
+        document.getElementById('starter_usd_label').textContent = sUSD;
+        document.getElementById('pro_usd_label').textContent     = pUSD;
+
+        // INR prices (Razorpay — paise → rupees)
+        const sINR = p.razorpay_starter_price ? '₹' + (parseInt(p.razorpay_starter_price) / 100).toLocaleString('en-IN') : '₹800';
+        const pINR = p.razorpay_pro_price     ? '₹' + (parseInt(p.razorpay_pro_price)     / 100).toLocaleString('en-IN') : '₹3,200';
+        document.getElementById('starter_inr_label').textContent = sINR;
+        document.getElementById('pro_inr_label').textContent     = pINR;
+
+        // Show / hide gateway rows
+        const show = (id, visible) => document.getElementById(id).style.display = visible ? 'block' : 'none';
+        show('starter_stripe_row', stripeOn);
+        show('pro_stripe_row',     stripeOn);
+        show('starter_rzp_row',    razorOn);
+        show('pro_rzp_row',        razorOn);
+        show('checkout_no_gateways', !anyActive);
+
       } catch (e) { /* keep defaults */ }
     }
     function hideCheckout() {
