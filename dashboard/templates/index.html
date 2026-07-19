@@ -149,7 +149,7 @@
         <input type="number" id="discover_limit" placeholder="Limit" value="20" class="input-field num-input" />
         <button id="discover_btn" class="btn btn-primary" onclick="startDiscovery()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span id="discover_btn_text">Discover & Scrape (-50 Credits)</span>
+          <span id="discover_btn_text">Discover & Scrape (-20 Credits)</span>
         </button>
       </div>
 
@@ -940,8 +940,8 @@
         }
 
         const currentCredits = parseInt(document.getElementById('user_credits').textContent);
-        if (!isNaN(currentCredits) && currentCredits < 50) {
-            status.textContent = 'Insufficient credits to start scraping (costs 50).';
+        if (!isNaN(currentCredits) && currentCredits < limit) {
+            status.textContent = `Insufficient credits to start scraping (costs up to ${limit}).`;
             status.className = 'status-msg error';
             showCheckout();
             return;
@@ -981,14 +981,15 @@
             });
             
             if (runRes.status === 402) {
-                 status.textContent = `Insufficient credits to start scraping.`;
+                 const errData = await runRes.json();
+                 status.textContent = `Insufficient credits to start scraping. You need ${errData.required || data.count} credits.`;
                  status.className = 'status-msg error';
                  showCheckout();
             } else if (runRes.status === 409) {
                 status.textContent = `Found ${data.count} leads. Scraper is already running!`;
                 status.className = 'status-msg warning';
             } else if (runRes.ok) {
-                status.textContent = `Success! Now scraping ${data.count} leads in the background (-50 Credits).`;
+                status.textContent = `Success! Now scraping ${data.count} leads in the background (-${data.count} Credits).`;
                 status.className = 'status-msg success';
                 fetchUser();
             } else {
@@ -1209,6 +1210,17 @@
     // Init App
     checkAuth();
     loadBrand();
+
+    // Dynamically update the discover button cost label
+    const limitInput = document.getElementById('discover_limit');
+    const btnText = document.getElementById('discover_btn_text');
+    if (limitInput && btnText) {
+        limitInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value) || 0;
+            btnText.textContent = `Discover & Scrape (-${val} Credits)`;
+        });
+    }
+
     // Init Google auth button (will silently no-op if client_id not set in admin)
     window.addEventListener('load', () => {
       // Wait a tick for the GSI script to be ready

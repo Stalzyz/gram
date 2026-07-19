@@ -132,12 +132,17 @@ def api_run(input_csv: str, workers: int = None, resume: bool = True, campaign: 
     """Kick off a pipeline run in the background (non-blocking for the dashboard)."""
     global _run_thread
 
-    # Check credits upfront (Option A logic as decided)
-    # Estimate leads from CSV (quick hack: count lines in file or just deduct a fixed batch)
-    # For now, we will deduct 50 credits to start a campaign
-    COST_PER_CAMPAIGN = 50
-    if not pipeline.store.deduct_credits(user_id, COST_PER_CAMPAIGN):
-        return JSONResponse({"status": "insufficient_credits"}, status_code=402)
+    # Calculate exact cost based on the number of leads in the CSV (1 credit per lead)
+    # Subtract 1 for the header row
+    try:
+        with open(input_csv, 'r', encoding='utf-8') as f:
+            lines = sum(1 for line in f)
+        cost = max(0, lines - 1)
+    except FileNotFoundError:
+        cost = 0
+
+    if not pipeline.store.deduct_credits(user_id, cost):
+        return JSONResponse({"status": "insufficient_credits", "required": cost}, status_code=402)
 
     with _run_lock:
         if _run_thread and _run_thread.is_alive():
