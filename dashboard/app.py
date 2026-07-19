@@ -42,6 +42,17 @@ from exporter.db import store
 def get_auth_config():
     return {"google_client_id": store.get_setting("google_client_id", "")}
 
+@app.get("/api/config/pricing")
+def get_pricing_config():
+    return {
+        "stripe_starter_price":   store.get_setting("stripe_starter_price",   "1000"),
+        "stripe_pro_price":       store.get_setting("stripe_pro_price",       "4000"),
+        "razorpay_starter_price": store.get_setting("razorpay_starter_price", "80000"),
+        "razorpay_pro_price":     store.get_setting("razorpay_pro_price",     "320000"),
+        "starter_credits":        store.get_setting("starter_credits",        "1,000"),
+        "pro_credits":            store.get_setting("pro_credits",            "5,000"),
+    }
+
 
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):

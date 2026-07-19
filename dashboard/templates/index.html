@@ -72,7 +72,7 @@
       <div class="pricing-cards">
         <div class="pricing-card">
           <h3>Starter</h3>
-          <p class="price">$10 <span>for 1,000 leads</span></p>
+          <p class="price"><span id="starter_price_label">$10</span> <span id="starter_credits_label">for 1,000 leads</span></p>
           <div class="button-group">
             <button onclick="buyStripe('starter')" class="btn btn-primary btn-full">Pay with Card</button>
             <button onclick="buyRazorpay('starter')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
@@ -80,7 +80,7 @@
         </div>
         <div class="pricing-card highlighted">
           <h3>Pro</h3>
-          <p class="price">$40 <span>for 5,000 leads</span></p>
+          <p class="price"><span id="pro_price_label">$40</span> <span id="pro_credits_label">for 5,000 leads</span></p>
           <div class="button-group">
             <button onclick="buyStripe('pro')" class="btn btn-primary btn-full">Pay with Card</button>
             <button onclick="buyRazorpay('pro')" class="btn btn-secondary btn-full">Pay with UPI / INR</button>
@@ -373,6 +373,10 @@
                   <div><label class="setting-label">Starter (Cents)</label><input type="number" id="setting_stripe_starter_price" class="input-field" placeholder="1000" /></div>
                   <div><label class="setting-label">Pro (Cents)</label><input type="number" id="setting_stripe_pro_price" class="input-field" placeholder="4000" /></div>
                 </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                  <div><label class="setting-label">Starter Credits</label><input type="text" id="setting_starter_credits" class="input-field" placeholder="1,000" /></div>
+                  <div><label class="setting-label">Pro Credits</label><input type="text" id="setting_pro_credits" class="input-field" placeholder="5,000" /></div>
+                </div>
               </div>
             </div>
             <div style="background:rgba(5,150,105,0.05);border:1px solid rgba(5,150,105,0.15);border-radius:10px;padding:12px;">
@@ -593,8 +597,26 @@
     }
 
     // --- CHECKOUT ---
-    function showCheckout() {
+    async function showCheckout() {
       document.getElementById('checkout_modal').style.display = 'flex';
+      try {
+        const res = await fetch('/api/config/pricing');
+        if (res.ok) {
+          const p = await res.json();
+          // Stripe prices are stored in cents, Razorpay in paise
+          const starterUSD = p.stripe_starter_price ? (parseInt(p.stripe_starter_price) / 100).toFixed(0) : '10';
+          const proUSD = p.stripe_pro_price ? (parseInt(p.stripe_pro_price) / 100).toFixed(0) : '40';
+          const starterINR = p.razorpay_starter_price ? (parseInt(p.razorpay_starter_price) / 100).toFixed(0) : '800';
+          const proINR = p.razorpay_pro_price ? (parseInt(p.razorpay_pro_price) / 100).toFixed(0) : '3200';
+          const starterCredits = p.starter_credits || '1,000';
+          const proCredits = p.pro_credits || '5,000';
+
+          document.getElementById('starter_price_label').textContent = `$${starterUSD}`;
+          document.getElementById('pro_price_label').textContent = `$${proUSD}`;
+          document.getElementById('starter_credits_label').textContent = `for ${starterCredits} leads`;
+          document.getElementById('pro_credits_label').textContent = `for ${proCredits} leads`;
+        }
+      } catch (e) { /* keep defaults */ }
     }
     function hideCheckout() {
       document.getElementById('checkout_modal').style.display = 'none';

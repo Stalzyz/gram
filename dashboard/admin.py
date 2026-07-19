@@ -25,6 +25,7 @@ def get_settings(admin=Depends(get_admin_user)):
         "brand_name", "support_email", "business_address", "logo_url", "brand_color",
         # Payments
         "stripe_secret_key", "stripe_publishable_key", "stripe_starter_price", "stripe_pro_price",
+        "starter_credits", "pro_credits",
         "razorpay_key_id", "razorpay_key_secret", "razorpay_starter_price", "razorpay_pro_price",
         # Tax
         "gstin", "gst_rate",
