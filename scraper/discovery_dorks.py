@@ -24,10 +24,12 @@ class DorkScraper:
         """
         Regex to find instagram.com/username patterns in the HTML.
         """
+        html_content = urllib.parse.unquote(html_content)
         usernames = set()
         # Look for instagram.com/some_username 
         # IG usernames can contain letters, numbers, periods, and underscores. Max 30 chars.
-        pattern = r"instagram\.com/([a-zA-Z0-9_\.]{1,30})[/\"\'\?]"
+        # Support trailing slashes, quotes, question marks, HTML tags (like <cite>), ampersands, or spaces.
+        pattern = r"instagram\.com/([a-zA-Z0-9_\.]{1,30})(?:[/\"\'\?<&\s]|$)"
         matches = re.findall(pattern, html_content)
         
         for match in matches:
@@ -109,6 +111,42 @@ class DorkScraper:
             
         return results
 
+    def search_yahoo(self, query: str, num_pages: int = 3) -> set:
+        """
+        Scrape Yahoo Search results using GET pagination. Yahoo is very lenient with Datacenter IPs.
+        """
+        logger.info(f"Starting Yahoo search for: {query}")
+        results = set()
+        base_url = "https://search.yahoo.com/search"
+        
+        for page in range(num_pages):
+            b_param = (page * 10) + 1
+            params = {
+                "p": query,
+                "b": b_param
+            }
+            headers = {
+                "User-Agent": random.choice(self.user_agents),
+                "Accept-Language": "en-US,en;q=0.9"
+            }
+            proxies = self.proxy_manager.next() if self.proxy_manager.enabled else None
+            
+            try:
+                resp = self.session.get(base_url, params=params, headers=headers, proxies=proxies, timeout=15)
+                if resp.status_code == 200:
+                    page_usernames = self.extract_usernames(resp.text)
+                    results.update(page_usernames)
+                    logger.info(f"Yahoo Page {page+1}: Found {len(page_usernames)} usernames.")
+                else:
+                    logger.warning(f"Yahoo returned status {resp.status_code}.")
+                    break
+            except Exception as e:
+                logger.error(f"Error during Yahoo search: {e}")
+                
+            time.sleep(random.uniform(2.0, 4.0))
+            
+        return results
+
     def discover_leads(self, keyword: str, platform: str = None, limit: int = 50) -> list:
         """
         Constructs the dork query and aggregates results until limit is reached.
@@ -125,7 +163,12 @@ class DorkScraper:
         all_usernames.update(bing_results)
         
         if len(all_usernames) < limit:
-            # Try DDG if we need more
+            # Try Yahoo next (it rarely blocks datacenter IPs)
+            yahoo_results = self.search_yahoo(dork, num_pages=5)
+            all_usernames.update(yahoo_results)
+            
+        if len(all_usernames) < limit:
+            # Try DDG if we still need more
             ddg_results = self.search_duckduckgo(dork)
             all_usernames.update(ddg_results)
             
